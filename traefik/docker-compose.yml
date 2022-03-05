@@ -1,0 +1,86 @@
+version: '3'
+
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - DUCKDNS_TOKEN=edd9235c-f2f5-49bf-a2a4-795bfde5fac8
+
+      # - CF_API_EMAIL=user@example.com
+      # - CF_DNS_API_TOKEN=YOU_API_TOKEN
+      # - CF_API_KEY=YOU_API_KEY
+      # be sure to use the correct one depending on if you are using a token or key
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/ubuntu/traefik/data/traefik.yml:/traefik.yml:ro
+      - /home/ubuntu/traefik/data/acme.json:/acme.json
+      - /home/ubuntu/traefik/data/configurations:/configurations
+
+      # - /home/username/traefik/data/traefik.yml:/traefik.yml:ro
+      # - /home/username/traefik/data/acme.json:/acme.json
+      # - /home/username/traefik/data/config.yml:/config.yml:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.traefik-secure.entrypoints=websecure"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.papermario.duckdns.org`)"
+      - "traefik.http.routers.traefik-secure.service=api@internal"
+      - "traefik.http.routers.traefik-secure.middlewares=user-auth@file"
+
+      # - "traefik.http.routers.traefik-secure.tls.certresolver=duckdns"
+      # - "traefik.http.routers.traefik-secure.tls=true"
+      # - "traefik.http.routers.traefik.entrypoints=http"
+      # - "traefik.http.routers.traefik.entrypoints=web"
+      # - "traefik.http.routers.traefik.entrypoints=websecure"
+      # - "traefik.http.routers.traefik.rule=Host(`traefik.papermario.duckdns.org`)"
+      # - "traefik.http.middlewares.traefik-auth.basicauth.users=dax:$$apr1$$frBuWDhf$$Ud3OwbJTwU5pSLwepbLR7."
+      # - "traefik.http.routers.traefik.service=traefik"
+      # - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      # - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+      # - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      # - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
+      # - "traefik.http.routers.traefik-secure.entrypoints=https"
+      # - "traefik.http.routers.traefik-secure.rule=Host(`traefik.papermario.duckdns.org`)"
+      # - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
+      # - "traefik.http.routers.traefik-secure.tls=true"
+      # - "traefik.http.routers.traefik-secure.tls.certresolver=http"
+      # - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare"
+      # - "traefik.http.routers.traefik-secure.tls.certresolver=duckdns"
+      # - "traefik.http.routers.traefik-secure.tls.domains[0].main=local.example.com"
+      # - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.local.example.com"
+      # - "traefik.http.routers.traefik-secure.service=api@internal"
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/ubuntu/portainer:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.portainer-secure.entrypoints=websecure"
+      - "traefik.http.routers.portainer-secure.rule=Host(`portainer.papermario.duckdns.org`)"
+      - "traefik.http.routers.portainer-secure.service=portainer"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+
+
+networks:
+  proxy:
+    external: true
