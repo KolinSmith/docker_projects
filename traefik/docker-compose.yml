@@ -12,8 +12,9 @@ services:
     ports:
       - 80:80
       - 443:443
-    environment:
-      - DUCKDNS_TOKEN=edd9235c-f2f5-49bf-a2a4-795bfde5fac8
+    #ended up putting this in the .env file
+    # environment:
+    #   - DUCKDNS_TOKEN=edd9235c-f2f5-49bf-a2a4-795bfde5fac8
 
       # - CF_API_EMAIL=user@example.com
       # - CF_DNS_API_TOKEN=YOU_API_TOKEN
@@ -60,6 +61,8 @@ services:
       # - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.local.example.com"
       # - "traefik.http.routers.traefik-secure.service=api@internal"
 
+####################################################################################################
+
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
@@ -79,6 +82,31 @@ services:
       - "traefik.http.routers.portainer-secure.rule=Host(`portainer.papermario.duckdns.org`)"
       - "traefik.http.routers.portainer-secure.service=portainer"
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+
+####################################################################################################
+
+  headscale:
+    image: headscale/headscale:latest
+    container_name: headscale
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    # ports:
+    #   - 27986:8080
+    volumes:
+        - /home/ubuntu/headscale/config:/etc/headscale
+        - /home/ubuntu/headscale/data:/var/lib/headscale
+    command: headscale serve
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.headscale-secure.entrypoints=websecure"
+      - "traefik.http.routers.headscale-secure.rule=Host(`headscale.papermario.duckdns.org`)"
+      - "traefik.http.routers.headscale-secure.service=headscale"
+      - "traefik.http.services.headscale.loadbalancer.server.port=8080"
+
 
 
 networks:
