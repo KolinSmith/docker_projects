@@ -96,8 +96,10 @@ services:
     # ports:
     #   - 27986:8080
     volumes:
-        - /home/ubuntu/headscale/config:/etc/headscale
-        - /home/ubuntu/headscale/data:/var/lib/headscale
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/ubuntu/headscale/config:/etc/headscale
+      - /home/ubuntu/headscale/data:/var/lib/headscale
     command: headscale serve
     labels:
       - "traefik.enable=true"
@@ -107,6 +109,42 @@ services:
       - "traefik.http.routers.headscale-secure.service=headscale"
       - "traefik.http.services.headscale.loadbalancer.server.port=8080"
 
+####################################################################################################
+
+  healthchecks:
+    # image: lscr.io/linuxserver/healthchecks
+    image: linuxserver/healthchecks:latest
+    container_name: healthchecks
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/ubuntu/healthchecks:/config
+    environment:
+      - PUID=1000
+      - PGID=100
+      - SUPERUSER_EMAIL=kolinksmith@gmail.com
+      - SUPERUSER_PASSWORD=nilok3
+      # - SITE_ROOT=healthchecks.papermario.duckdns.org
+      # - SITE_NAME=monitor
+      # - DEFAULT_FROM_EMAIL=notify@cloudlab.gg
+      # - EMAIL_HOST=smtp.mailgun.org
+      # - EMAIL_HOST_USER=postmaster@sandbox32ed03a070544e63bca0036e45ff5a9b.mailgun.org
+      # - EMAIL_HOST_PASSWORD=7d6ac95846702e6f9a39ab3c77729d45-10eedde5-f6b578b9
+      # - EMAIL_PORT=587
+      # - EMAIL_USE_TLS=True
+      # - ALLOWED_HOSTS=*
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.healthchecks-secure.entrypoints=websecure"
+      - "traefik.http.routers.healthchecks-secure.rule=Host(`healthchecks.papermario.duckdns.org`)"
+      - "traefik.http.routers.healthchecks-secure.service=healthchecks"
+      - "traefik.http.services.healthchecks.loadbalancer.server.port=8000"
 
 
 networks:
