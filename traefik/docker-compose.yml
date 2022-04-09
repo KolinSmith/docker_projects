@@ -129,15 +129,6 @@ services:
       - PGID=100
       - SUPERUSER_EMAIL=kolinksmith@gmail.com
       - SUPERUSER_PASSWORD=nilok3
-      # - SITE_ROOT=healthchecks.papermario.duckdns.org
-      # - SITE_NAME=monitor
-      # - DEFAULT_FROM_EMAIL=notify@cloudlab.gg
-      # - EMAIL_HOST=smtp.mailgun.org
-      # - EMAIL_HOST_USER=postmaster@sandbox32ed03a070544e63bca0036e45ff5a9b.mailgun.org
-      # - EMAIL_HOST_PASSWORD=7d6ac95846702e6f9a39ab3c77729d45-10eedde5-f6b578b9
-      # - EMAIL_PORT=587
-      # - EMAIL_USE_TLS=True
-      # - ALLOWED_HOSTS=*
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
