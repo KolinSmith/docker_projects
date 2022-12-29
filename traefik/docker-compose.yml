@@ -12,6 +12,9 @@ services:
     ports:
       - 80:80
       - 443:443
+    env_file:
+      - .env
+   
     #ended up putting this in the .env file
     # environment:
     #   - DUCKDNS_TOKEN=edd9235c-f2f5-49bf-a2a4-795bfde5fac8
@@ -23,9 +26,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/ubuntu/traefik/data/traefik.yml:/traefik.yml:ro
-      - /home/ubuntu/traefik/data/acme.json:/acme.json
-      - /home/ubuntu/traefik/data/configurations:/configurations
+      - /home/ubuntu/docker/traefik/data/traefik.yml:/traefik.yml:ro
+      - /home/ubuntu/docker/traefik/data/acme.json:/acme.json
+      - /home/ubuntu/docker/traefik/data/configurations:/configurations
 
       # - /home/username/traefik/data/traefik.yml:/traefik.yml:ro
       # - /home/username/traefik/data/acme.json:/acme.json
@@ -74,7 +77,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/ubuntu/portainer:/data
+      - /home/ubuntu/docker/portainer:/data
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
@@ -98,8 +101,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/ubuntu/headscale/config:/etc/headscale
-      - /home/ubuntu/headscale/data:/var/lib/headscale
+      - /home/ubuntu/docker/headscale/config:/etc/headscale
+      - /home/ubuntu/docker/headscale/data:/var/lib/headscale
     command: headscale serve
     labels:
       - "traefik.enable=true"
@@ -123,7 +126,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/ubuntu/healthchecks:/config
+      - /home/ubuntu/docker/healthchecks:/config
     environment:
       - PUID=1000
       - PGID=100

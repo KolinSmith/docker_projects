@@ -20,6 +20,7 @@ entryPoints:
           - main: papermario.duckdns.org
             sans:
               - "*.papermario.duckdns.org"
+              # - "*.healthchecks.papermario.duckdns.org"
 
   # http:
   #   address: ":80"
@@ -36,6 +37,9 @@ providers:
   file:
     filename: /configurations/dynamic.yml
 
+
+#if you come back after a while delete the existing 'acme.json'
+#and then recreate it 'touch acme.json; chmod 600 acme.json'
 certificatesResolvers:
   duckdns:
      acme:
