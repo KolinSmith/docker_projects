@@ -208,6 +208,28 @@ services:
       options:
         max-size: "1m"
 
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime-kuma
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/ubuntu/docker-data/uptime-kuma:/data
+    ports:
+      - 3001:3001  # <Host Port>:<Container Port>
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.uptime-kuma-secure.entrypoints=websecure"
+      - "traefik.http.routers.uptime-kuma-secure.rule=Host(`uptime-kuma.papermario.duckdns.org`)"
+      - "traefik.http.routers.uptime-kuma-secure.service=uptime-kuma-service"
+      - "traefik.http.services.uptime-kuma-service.loadbalancer.server.port=3001"
+      - "traefik.http.routers.uptime-kuma-secure.tls=true"
+
 ####################################################################################################
 
 networks:
