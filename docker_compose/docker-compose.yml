@@ -136,6 +136,7 @@ services:
       - PGID=100
       - SUPERUSER_EMAIL=kolinksmith@gmail.com
       - SUPERUSER_PASSWORD=nilok3
+      - SITE_ROOT=http://localhost:8000
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"

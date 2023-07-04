@@ -1,0 +1,110 @@
+version: '3'
+
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    ports:
+      - 80:80
+      - 443:443
+    env_file:
+      - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+   
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/dax/code_base/docker_projects/intranet_monitor/data/traefik/traefik.yml:/traefik.yml:ro
+      - /home/dax/code_base/docker_projects/intranet_monitor/data/traefik/acme.json:/acme.json
+      - /home/dax/code_base/docker_projects/intranet_monitor/data/traefik/configurations:/configurations
+
+      # - /home/username/traefik/data/traefik.yml:/traefik.yml:ro
+      # - /home/username/traefik/data/acme.json:/acme.json
+      # - /home/username/traefik/data/config.yml:/config.yml:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.traefik-secure.entrypoints=websecure"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.internal.homelab.gg`)"
+      - "traefik.http.routers.traefik-secure.service=api@internal"
+      - "traefik.http.routers.traefik-secure.middlewares=user-auth@file"
+
+      # - "traefik.http.routers.traefik-secure.tls.certresolver=duckdns"
+      # - "traefik.http.routers.traefik-secure.tls=true"
+      # - "traefik.http.routers.traefik.entrypoints=http"
+      # - "traefik.http.routers.traefik.entrypoints=web"
+      # - "traefik.http.routers.traefik.entrypoints=websecure"
+      # - "traefik.http.routers.traefik.rule=Host(`traefik.papermario.duckdns.org`)"
+      # - "traefik.http.middlewares.traefik-auth.basicauth.users=dax:$$apr1$$frBuWDhf$$Ud3OwbJTwU5pSLwepbLR7."
+      # - "traefik.http.routers.traefik.service=traefik"
+      # - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      # - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+      # - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      # - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
+      # - "traefik.http.routers.traefik-secure.entrypoints=https"
+      # - "traefik.http.routers.traefik-secure.rule=Host(`traefik.papermario.duckdns.org`)"
+      # - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
+      # - "traefik.http.routers.traefik-secure.tls=true"
+      # - "traefik.http.routers.traefik-secure.tls.certresolver=http"
+      # - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare"
+      # - "traefik.http.routers.traefik-secure.tls.certresolver=duckdns"
+      # - "traefik.http.routers.traefik-secure.tls.domains[0].main=local.example.com"
+      # - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.local.example.com"
+      # - "traefik.http.routers.traefik-secure.service=api@internal"
+
+####################################################################################################
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/dax/code_base/docker_projects/intranet_monitor/data/portainer:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.portainer-secure.entrypoints=websecure"
+      - "traefik.http.routers.portainer-secure.rule=Host(`portainer.internal.homelab.gg`)"
+      - "traefik.http.routers.portainer-secure.service=portainer-service"
+      - "traefik.http.services.portainer-service.loadbalancer.server.port=9000"
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime-kuma
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/dax/code_base/docker_projects/intranet_monitor/data/uptime-kuma:/data
+    ports:
+      - 3001:3001  # <Host Port>:<Container Port>
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.uptime-kuma-secure.entrypoints=websecure"
+      - "traefik.http.routers.uptime-kuma-secure.rule=Host(`uptime-kuma.internal.homelab.gg`)"
+      - "traefik.http.routers.uptime-kuma-secure.service=uptime-kuma-service"
+      - "traefik.http.services.uptime-kuma-service.loadbalancer.server.port=3001"
+      - "traefik.http.routers.uptime-kuma-secure.tls=true"
+
+####################################################################################################
+
+networks:
+  proxy:
+    external: true
