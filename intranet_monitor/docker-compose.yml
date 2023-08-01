@@ -82,6 +82,8 @@ services:
       - "traefik.http.routers.portainer-secure.service=portainer-service"
       - "traefik.http.services.portainer-service.loadbalancer.server.port=9000"
 
+####################################################################################################
+
   uptime-kuma:
     image: louislam/uptime-kuma:latest
     container_name: uptime-kuma
@@ -104,6 +106,19 @@ services:
       - "traefik.http.routers.uptime-kuma-secure.tls=true"
 
 ####################################################################################################
+
+  fasten:
+    image: ghcr.io/fastenhealth/fasten-onprem:main
+    container_name: fasten
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports: 
+      - 9090:8080
+    restart: unless-stopped
+    networks:
+      - proxy
+
 
 networks:
   proxy:
