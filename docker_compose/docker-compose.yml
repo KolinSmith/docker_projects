@@ -3,16 +3,16 @@ services:
     image: traefik:latest
     container_name: traefik
     restart: unless-stopped
-    user: "1000:1000" #run as ubuntu user that owns acme.json
+    user: "1000:1000"
     security_opt:
       - no-new-privileges:true
-    # cap_drop:
-    #   - ALL
-    # cap_add:
-    #   - NET_BIND_SERVICE
-    #   - CHOWN
-    #   - SETGID
-    #   - SETUID
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - CHOWN
+      - SETGID
+      - SETUID
     networks:
       - proxy
     ports:
@@ -58,12 +58,13 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    # cap_drop:
-    #   - ALL
-    # cap_add:
-    #   - CHOWN
-    #   - SETGID
-    #   - SETUID
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
     networks:
       - proxy
     volumes:
@@ -97,13 +98,14 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    # cap_drop:
-    #   - ALL
-    # cap_add:
-    #   - CHOWN
-    #   - SETGID
-    #   - SETUID
-    #   - NET_ADMIN
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - NET_ADMIN
+      - NET_RAW
     networks:
       - proxy
     volumes:
@@ -139,12 +141,13 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    # cap_drop:
-    #   - ALL
-    # cap_add:
-    #   - CHOWN
-    #   - SETGID
-    #   - SETUID
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
     networks:
       - proxy
     volumes:
@@ -183,13 +186,13 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    # cap_drop:
-    #   - ALL
-    # cap_add:
-    #   - CHOWN
-    #   - SETGID
-    #   - SETUID
-    #   - DAC_OVERRIDE
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
     environment:
       - APP_NAME="Gitea"
       - USER_UID=1000
@@ -246,12 +249,12 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    # cap_drop:
-    #   - ALL
-    # cap_add:
-    #   - SETGID
-    #   - SETUID
-    #   - DAC_OVERRIDE
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
     networks:
       - proxy
     healthcheck:
@@ -279,12 +282,13 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    # cap_drop:
-    #   - ALL
-    # cap_add:
-    #   - CHOWN
-    #   - SETGID
-    #   - SETUID
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -325,12 +329,13 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    # cap_drop:
-    #   - ALL
-    # cap_add:
-    #   - CHOWN
-    #   - SETGID
-    #   - SETUID
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
     networks:
       - proxy
     volumes:
@@ -363,12 +368,12 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    # cap_drop:
-    #   - ALL
-    # cap_add:
-    #   - SETGID
-    #   - SETUID
-    #   - DAC_OVERRIDE
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
     networks:
       - proxy
     volumes:
