@@ -3,6 +3,7 @@ services:
     image: traefik:latest
     container_name: traefik
     restart: unless-stopped
+    user: "1000:1000" #run as ubuntu user that owns acme.json
     security_opt:
       - no-new-privileges:true
     # cap_drop:
