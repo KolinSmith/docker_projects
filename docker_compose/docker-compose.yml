@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   traefik:
     image: traefik:latest
@@ -7,13 +5,13 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - NET_BIND_SERVICE
-      - CHOWN
-      - SETGID
-      - SETUID
+    # cap_drop:
+    #   - ALL
+    # cap_add:
+    #   - NET_BIND_SERVICE
+    #   - CHOWN
+    #   - SETGID
+    #   - SETUID
     networks:
       - proxy
     ports:
@@ -35,9 +33,9 @@ services:
       - "traefik.http.routers.traefik-secure.service=api@internal"
       - "traefik.http.routers.traefik-secure.middlewares=user-auth@file"
     healthcheck:
-      test: ["CMD", "traefik", "healthcheck"]
-      interval: 30s
-      timeout: 3s
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 5s
       retries: 3
     deploy:
       resources:
@@ -59,12 +57,12 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SETGID
-      - SETUID
+    # cap_drop:
+    #   - ALL
+    # cap_add:
+    #   - CHOWN
+    #   - SETGID
+    #   - SETUID
     networks:
       - proxy
     volumes:
@@ -78,11 +76,6 @@ services:
       - "traefik.http.routers.portainer-secure.rule=Host(`portainer.${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.portainer-secure.service=portainer-service"
       - "traefik.http.services.portainer-service.loadbalancer.server.port=9000"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/api/status || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
     deploy:
       resources:
         limits:
@@ -103,13 +96,13 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SETGID
-      - SETUID
-      - NET_ADMIN
+    # cap_drop:
+    #   - ALL
+    # cap_add:
+    #   - CHOWN
+    #   - SETGID
+    #   - SETUID
+    #   - NET_ADMIN
     networks:
       - proxy
     volumes:
@@ -125,11 +118,6 @@ services:
       - "traefik.http.routers.headscale-secure.rule=Host(`headscale.${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.headscale-secure.service=headscale-service"
       - "traefik.http.services.headscale-service.loadbalancer.server.port=8080"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
     deploy:
       resources:
         limits:
@@ -150,12 +138,12 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SETGID
-      - SETUID
+    # cap_drop:
+    #   - ALL
+    # cap_add:
+    #   - CHOWN
+    #   - SETGID
+    #   - SETUID
     networks:
       - proxy
     volumes:
@@ -171,11 +159,6 @@ services:
       - "traefik.http.routers.healthchecks-secure.rule=Host(`healthchecks.${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.healthchecks-secure.service=healthchecks-service"
       - "traefik.http.services.healthchecks-service.loadbalancer.server.port=8000"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
     deploy:
       resources:
         limits:
@@ -199,13 +182,13 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SETGID
-      - SETUID
-      - DAC_OVERRIDE
+    # cap_drop:
+    #   - ALL
+    # cap_add:
+    #   - CHOWN
+    #   - SETGID
+    #   - SETUID
+    #   - DAC_OVERRIDE
     environment:
       - APP_NAME="Gitea"
       - USER_UID=1000
@@ -239,10 +222,11 @@ services:
       - "traefik.http.routers.gitea-secure.service=gitea-service"
       - "traefik.http.services.gitea-service.loadbalancer.server.port=3000"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
       interval: 30s
       timeout: 5s
       retries: 3
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -261,12 +245,12 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - SETGID
-      - SETUID
-      - DAC_OVERRIDE
+    # cap_drop:
+    #   - ALL
+    # cap_add:
+    #   - SETGID
+    #   - SETUID
+    #   - DAC_OVERRIDE
     networks:
       - proxy
     healthcheck:
@@ -294,16 +278,16 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SETGID
-      - SETUID
+    # cap_drop:
+    #   - ALL
+    # cap_add:
+    #   - CHOWN
+    #   - SETGID
+    #   - SETUID
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/ubuntu/docker-data/uptime-kuma:/data
+      - /home/ubuntu/docker-data/uptime-kuma:/app/data
     networks:
       - proxy
     labels:
@@ -315,10 +299,11 @@ services:
       - "traefik.http.services.uptime-kuma-service.loadbalancer.server.port=3001"
       - "traefik.http.routers.uptime-kuma-secure.tls=true"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3001/ || exit 1"]
+      test: ["CMD-SHELL", "curl -fs http://localhost:3001 || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
+      start_period: 20s
     deploy:
       resources:
         limits:
@@ -339,12 +324,12 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SETGID
-      - SETUID
+    # cap_drop:
+    #   - ALL
+    # cap_add:
+    #   - CHOWN
+    #   - SETGID
+    #   - SETUID
     networks:
       - proxy
     volumes:
@@ -358,11 +343,6 @@ services:
       - "traefik.http.routers.searxng-secure.rule=Host(`search.${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.searxng-secure.service=searxng-service"
       - "traefik.http.services.searxng-service.loadbalancer.server.port=8080"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
     deploy:
       resources:
         limits:
@@ -382,12 +362,12 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - SETGID
-      - SETUID
-      - DAC_OVERRIDE
+    # cap_drop:
+    #   - ALL
+    # cap_add:
+    #   - SETGID
+    #   - SETUID
+    #   - DAC_OVERRIDE
     networks:
       - proxy
     volumes:
