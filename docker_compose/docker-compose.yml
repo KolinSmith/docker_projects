@@ -278,50 +278,50 @@ services:
 
 ####################################################################################################
 
-  # uptime-kuma:
-  #   image: louislam/uptime-kuma:latest
-  #   container_name: uptime-kuma
-  #   restart: unless-stopped
-  #   security_opt:
-  #     - no-new-privileges:true
-  #   cap_drop:
-  #     - ALL
-  #   cap_add:
-  #     - CHOWN
-  #     - SETGID
-  #     - SETUID
-  #     - DAC_OVERRIDE
-  #   volumes:
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     - /home/ubuntu/docker-data/uptime-kuma:/app/data
-  #   networks:
-  #     - proxy
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.docker.network=proxy"
-  #     - "traefik.http.routers.uptime-kuma-secure.entrypoints=websecure"
-  #     - "traefik.http.routers.uptime-kuma-secure.rule=Host(`uptime-kuma.${TRAEFIK_DOMAIN}`)"
-  #     - "traefik.http.routers.uptime-kuma-secure.service=uptime-kuma-service"
-  #     - "traefik.http.services.uptime-kuma-service.loadbalancer.server.port=3001"
-  #     - "traefik.http.routers.uptime-kuma-secure.tls=true"
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -fs http://localhost:3001 || exit 1"]
-  #     interval: 30s
-  #     timeout: 5s
-  #     retries: 3
-  #     start_period: 20s
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 512M
-  #       reservations:
-  #         memory: 256M
-  #   logging:
-  #     driver: "json-file"
-  #     options:
-  #       max-size: "1m"
-  #       max-file: "1"
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime-kuma
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/ubuntu/docker-data/uptime-kuma:/app/data
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.uptime-kuma-secure.entrypoints=websecure"
+      - "traefik.http.routers.uptime-kuma-secure.rule=Host(`uptime-kuma.${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.uptime-kuma-secure.service=uptime-kuma-service"
+      - "traefik.http.services.uptime-kuma-service.loadbalancer.server.port=3001"
+      - "traefik.http.routers.uptime-kuma-secure.tls=true"
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -fs http://localhost:3001 || exit 1"]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
 
 ####################################################################################################
 
