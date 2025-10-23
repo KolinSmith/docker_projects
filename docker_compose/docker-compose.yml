@@ -30,7 +30,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       - "traefik.http.routers.traefik-secure.entrypoints=websecure"
-      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${DUCKDNS_DOMAIN}`)"
       - "traefik.http.routers.traefik-secure.service=api@internal"
       - "traefik.http.routers.traefik-secure.middlewares=user-auth@file"
     # healthcheck:
@@ -75,7 +75,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       - "traefik.http.routers.portainer-secure.entrypoints=websecure"
-      - "traefik.http.routers.portainer-secure.rule=Host(`portainer.${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.portainer-secure.rule=Host(`portainer.${DUCKDNS_DOMAIN}`)"
       - "traefik.http.routers.portainer-secure.service=portainer-service"
       - "traefik.http.services.portainer-service.loadbalancer.server.port=9000"
     deploy:
@@ -120,7 +120,7 @@ services:
   #     - "traefik.enable=true"
   #     - "traefik.docker.network=proxy"
   #     - "traefik.http.routers.headscale-secure.entrypoints=websecure"
-  #     - "traefik.http.routers.headscale-secure.rule=Host(`headscale.${TRAEFIK_DOMAIN}`)"
+  #     - "traefik.http.routers.headscale-secure.rule=Host(`headscale.${DUCKDNS_DOMAIN}`)"
   #     - "traefik.http.routers.headscale-secure.service=headscale-service"
   #     - "traefik.http.services.headscale-service.loadbalancer.server.port=8080"
   #   deploy:
@@ -162,7 +162,7 @@ services:
   #     - "traefik.enable=true"
   #     - "traefik.docker.network=proxy"
   #     - "traefik.http.routers.healthchecks-secure.entrypoints=websecure"
-  #     - "traefik.http.routers.healthchecks-secure.rule=Host(`healthchecks.${TRAEFIK_DOMAIN}`)"
+  #     - "traefik.http.routers.healthchecks-secure.rule=Host(`healthchecks.${DUCKDNS_DOMAIN}`)"
   #     - "traefik.http.routers.healthchecks-secure.service=healthchecks-service"
   #     - "traefik.http.services.healthchecks-service.loadbalancer.server.port=8000"
   #   deploy:
@@ -179,149 +179,149 @@ services:
 
 ####################################################################################################
 
-  # gitea:
-  #   image: gitea/gitea:latest
-  #   container_name: gitea
-  #   depends_on:
-  #     - traefik
-  #     - gitea-cache
-  #   restart: unless-stopped
-  #   security_opt:
-  #     - no-new-privileges:true
-  #   cap_drop:
-  #     - ALL
-  #   cap_add:
-  #     - CHOWN
-  #     - SETGID
-  #     - SETUID
-  #     - DAC_OVERRIDE
-  #   environment:
-  #     - APP_NAME="Gitea"
-  #     - USER_UID=1000
-  #     - USER_GID=1000
-  #     - USER=git
-  #     - RUN_MODE=prod
-  #     - DOMAIN=gitea.${TRAEFIK_DOMAIN}
-  #     - SSH_DOMAIN=gitea.${TRAEFIK_DOMAIN}
-  #     - HTTP_PORT=3000
-  #     - ROOT_URL=https://gitea.${TRAEFIK_DOMAIN}
-  #     - SSH_PORT=222
-  #     - SSH_LISTEN_PORT=22
-  #     - DB_TYPE=sqlite3
-  #     - GITEA__cache__ENABLED=true
-  #     - GITEA__cache__ADAPTER=redis
-  #     - GITEA__cache__HOST=redis://gitea-cache:6379/0?pool_size=100&idle_timeout=180s
-  #     - GITEA__cache__ITEM_TTL=24h
-  #   networks:
-  #     - proxy
-  #   volumes:
-  #     - /home/ubuntu/docker-data/gitea:/data
-  #     - /etc/timezone:/etc/timezone:ro
-  #     - /etc/localtime:/etc/localtime:ro
-  #   ports:
-  #     - "222:22"
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.docker.network=proxy"
-  #     - "traefik.http.routers.gitea-secure.entrypoints=websecure"
-  #     - "traefik.http.routers.gitea-secure.rule=Host(`gitea.${TRAEFIK_DOMAIN}`)"
-  #     - "traefik.http.routers.gitea-secure.service=gitea-service"
-  #     - "traefik.http.services.gitea-service.loadbalancer.server.port=3000"
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:3000/"]
-  #     interval: 30s
-  #     timeout: 5s
-  #     retries: 3
-  #     start_period: 10s
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 1G
-  #       reservations:
-  #         memory: 512M
-  #   logging:
-  #     driver: "json-file"
-  #     options:
-  #       max-size: "1m"
-  #       max-file: "1"
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    depends_on:
+      - traefik
+      - gitea-cache
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    environment:
+      - APP_NAME="Gitea"
+      - USER_UID=1000
+      - USER_GID=1000
+      - USER=git
+      - RUN_MODE=prod
+      - DOMAIN=gitea.${DUCKDNS_DOMAIN}
+      - SSH_DOMAIN=gitea.${DUCKDNS_DOMAIN}
+      - HTTP_PORT=3000
+      - ROOT_URL=https://gitea.${DUCKDNS_DOMAIN}
+      - SSH_PORT=222
+      - SSH_LISTEN_PORT=22
+      - DB_TYPE=sqlite3
+      - GITEA__cache__ENABLED=true
+      - GITEA__cache__ADAPTER=redis
+      - GITEA__cache__HOST=redis://gitea-cache:6379/0?pool_size=100&idle_timeout=180s
+      - GITEA__cache__ITEM_TTL=24h
+    networks:
+      - proxy
+    volumes:
+      - /home/ubuntu/docker-data/gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "222:22"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.gitea-secure.entrypoints=websecure"
+      - "traefik.http.routers.gitea-secure.rule=Host(`gitea.${DUCKDNS_DOMAIN}`)"
+      - "traefik.http.routers.gitea-secure.service=gitea-service"
+      - "traefik.http.services.gitea-service.loadbalancer.server.port=3000"
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
 
-  # gitea-cache:
-  #   container_name: gitea-cache
-  #   image: docker.io/valkey/valkey:8-alpine
-  #   restart: unless-stopped
-  #   security_opt:
-  #     - no-new-privileges:true
-  #   cap_drop:
-  #     - ALL
-  #   cap_add:
-  #     - SETGID
-  #     - SETUID
-  #     - DAC_OVERRIDE
-  #   networks:
-  #     - proxy
-  #   healthcheck:
-  #     test: ["CMD", "valkey-cli", "ping"]
-  #     interval: 15s
-  #     timeout: 3s
-  #     retries: 30
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 256M
-  #       reservations:
-  #         memory: 128M
-  #   logging:
-  #     driver: "json-file"
-  #     options:
-  #       max-size: "1m"
-  #       max-file: "1"
+  gitea-cache:
+    container_name: gitea-cache
+    image: docker.io/valkey/valkey:8-alpine
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    networks:
+      - proxy
+    # healthcheck:
+    #   test: ["CMD", "valkey-cli", "ping"]
+    #   interval: 15s
+    #   timeout: 3s
+    #   retries: 30
+    deploy:
+      resources:
+        limits:
+          memory: 128M      
+        reservations:
+          memory: 64M       
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
 
 ####################################################################################################
 
-  # uptime-kuma:
-  #   image: louislam/uptime-kuma:latest
-  #   container_name: uptime-kuma
-  #   restart: unless-stopped
-  #   security_opt:
-  #     - no-new-privileges:true
-  #   cap_drop:
-  #     - ALL
-  #   cap_add:
-  #     - CHOWN
-  #     - SETGID
-  #     - SETUID
-  #     - DAC_OVERRIDE
-  #   volumes:
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     - /home/ubuntu/docker-data/uptime-kuma:/app/data
-  #   networks:
-  #     - proxy
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.docker.network=proxy"
-  #     - "traefik.http.routers.uptime-kuma-secure.entrypoints=websecure"
-  #     - "traefik.http.routers.uptime-kuma-secure.rule=Host(`uptime-kuma.${TRAEFIK_DOMAIN}`)"
-  #     - "traefik.http.routers.uptime-kuma-secure.service=uptime-kuma-service"
-  #     - "traefik.http.services.uptime-kuma-service.loadbalancer.server.port=3001"
-  #     - "traefik.http.routers.uptime-kuma-secure.tls=true"
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -fs http://localhost:3001 || exit 1"]
-  #     interval: 30s
-  #     timeout: 5s
-  #     retries: 3
-  #     start_period: 20s
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 512M
-  #       reservations:
-  #         memory: 256M
-  #   logging:
-  #     driver: "json-file"
-  #     options:
-  #       max-size: "1m"
-  #       max-file: "1"
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime-kuma
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/ubuntu/docker-data/uptime-kuma:/app/data
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.uptime-kuma-secure.entrypoints=websecure"
+      - "traefik.http.routers.uptime-kuma-secure.rule=Host(`uptime-kuma.${DUCKDNS_DOMAIN}`)"
+      - "traefik.http.routers.uptime-kuma-secure.service=uptime-kuma-service"
+      - "traefik.http.services.uptime-kuma-service.loadbalancer.server.port=3001"
+      - "traefik.http.routers.uptime-kuma-secure.tls=true"
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -fs http://localhost:3001 || exit 1"]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
 
 ####################################################################################################
 
@@ -343,13 +343,20 @@ services:
     volumes:
       - /home/ubuntu/docker-data/searxng:/etc/searxng:rw
     environment:
-      - SEARXNG_BASE_URL=https://search.${TRAEFIK_DOMAIN}/
+      - SEARXNG_BASE_URL=https://search.${DUCKDNS_DOMAIN}/
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
+      # Route for duckdns domain (uses duckdns cert)
       - "traefik.http.routers.searxng-secure.entrypoints=websecure"
-      - "traefik.http.routers.searxng-secure.rule=Host(`search.${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.searxng-secure.rule=Host(`search.${DUCKDNS_DOMAIN}`)"
       - "traefik.http.routers.searxng-secure.service=searxng-service"
+      # Route for test.com domain (uses cloudflare cert)
+      - "traefik.http.routers.searxng-testdomain.entrypoints=websecure"
+      - "traefik.http.routers.searxng-testdomain.rule=Host(`search.${SEARCH_DOMAIN}`)"
+      - "traefik.http.routers.searxng-testdomain.tls.certresolver=cloudflare"
+      - "traefik.http.routers.searxng-testdomain.service=searxng-service"
+      # Service definition
       - "traefik.http.services.searxng-service.loadbalancer.server.port=8080"
     deploy:
       resources:
