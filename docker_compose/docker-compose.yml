@@ -278,6 +278,74 @@ services:
 
 ####################################################################################################
 
+  gitea-mirror:
+    image: ghcr.io/raylabshq/gitea-mirror:latest
+    container_name: gitea-mirror
+    depends_on:
+      - gitea
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    networks:
+      - proxy
+    volumes:
+      - /home/ubuntu/docker-data/gitea-mirror:/app/data
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      # Basic settings
+      - PORT=4321
+      - PUID=1000
+      - PGID=1000
+      
+      # GitHub configuration
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_USERNAME=${GITHUB_USERNAME}
+      
+      # Gitea configuration (using internal Docker network)
+      - GITEA_URL=http://gitea:3000
+      - GITEA_TOKEN=${GITEA_TOKEN}
+      
+      # Auto-sync configuration
+      - SCHEDULE_ENABLED=true
+      - SCHEDULE_INTERVAL=3600  # Check every hour (in seconds)
+      - GITEA_MIRROR_INTERVAL=8h  # Sync each repo every 8 hours
+      
+      # Auto-import settings
+      - AUTO_IMPORT_REPOS=true
+      
+      # Cleanup configuration (IMPORTANT - use archive for safety!)
+      - CLEANUP_DELETE_IF_NOT_IN_GITHUB=true
+      - CLEANUP_ORPHANED_REPO_ACTION=archive
+      - CLEANUP_DRY_RUN=false
+      
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.gitea-mirror-secure.entrypoints=websecure"
+      - "traefik.http.routers.gitea-mirror-secure.rule=Host(`gitea-mirror.${DUCKDNS_DOMAIN}`)"
+      - "traefik.http.routers.gitea-mirror-secure.service=gitea-mirror-service"
+      - "traefik.http.services.gitea-mirror-service.loadbalancer.server.port=4321"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+####################################################################################################
+
   uptime-kuma:
     image: louislam/uptime-kuma:latest
     container_name: uptime-kuma
@@ -350,6 +418,7 @@ services:
       # Route for duckdns domain (uses duckdns cert)
       - "traefik.http.routers.searxng-secure.entrypoints=websecure"
       - "traefik.http.routers.searxng-secure.rule=Host(`search.${DUCKDNS_DOMAIN}`)"
+      - "traefik.http.routers.searxng-testdomain.tls.certresolver=duckdns"
       - "traefik.http.routers.searxng-secure.service=searxng-service"
       # Route for test.com domain (uses cloudflare cert)
       - "traefik.http.routers.searxng-testdomain.entrypoints=websecure"
