@@ -12,7 +12,8 @@ http:
       basicAuth:
         users:
           - "dax:$2y$10$IXxbcKXGwwOiUW/u94atOObkcqogg2zlnlQrxGKlawSXgRtsCBJUO"
-          #username: dax | password: test
+          # generated htpasswd via https://htpassword.com/ password is test
+
 
 tls:
   options:
