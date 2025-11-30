@@ -20,40 +20,36 @@ entryPoints:
           - main: papermario.duckdns.org
             sans:
               - "*.papermario.duckdns.org"
-              # - "*.healthchecks.papermario.duckdns.org"
 
-  # http:
-  #   address: ":80"
-  # https:
-  #   address: ":443"
 serversTransport:
   insecureSkipVerify: true
+
+log:
+  level: DEBUG
 
 providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
     network: proxy
+    watch: true
   file:
     filename: /configurations/dynamic.yml
 
-
-#if you come back after a while delete the existing 'acme.json'
-#and then recreate it 'touch acme.json; chmod 600 acme.json'
 certificatesResolvers:
   duckdns:
-     acme:
+    acme:
       email: kolinksmith@gmail.com
       storage: acme.json
       dnsChallenge:
         provider: duckdns
 
-#  cloudflare:
-#    acme:
-#      email: you@example.com
-#      storage: acme.json
-#      dnsChallenge:
-#        provider: cloudflare
-#        resolvers:
-#          - "1.1.1.1:53"
-#          - "1.0.0.1:53"
+  cloudflare:
+    acme:
+      email: kolinksmith@gmail.com
+      storage: acme-cloudflare.json
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1:53"
+          - "1.0.0.1:53"

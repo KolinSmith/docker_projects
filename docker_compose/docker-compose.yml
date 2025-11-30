@@ -25,6 +25,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /home/ubuntu/docker-data/traefik/data/traefik.yml:/traefik.yml:ro
       - /home/ubuntu/docker-data/traefik/data/acme.json:/acme.json
+      - /home/ubuntu/docker-data/traefik/data/acme.json:/acme-cloudflare.json
       - /home/ubuntu/docker-data/traefik/data/configurations:/configurations
     labels:
       - "traefik.enable=true"
@@ -60,51 +61,51 @@ services:
 
 ####################################################################################################
 
-  portainer:
-    image: portainer/portainer-ce:latest
-    container_name: portainer
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SETGID
-      - SETUID
-      - DAC_OVERRIDE
-    networks:
-      - proxy
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/ubuntu/docker-data/portainer:/data
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      # Route for duckdns domain
-      - "traefik.http.routers.portainer-secure.entrypoints=websecure"
-      - "traefik.http.routers.portainer-secure.rule=Host(`portainer.${DUCKDNS_DOMAIN}`)"
-      - "traefik.http.routers.portainer-secure.tls.certresolver=duckdns"
-      - "traefik.http.routers.portainer-secure.service=portainer-service"
-      # Route for search domain
-      - "traefik.http.routers.portainer-searchdomain.entrypoints=websecure"
-      - "traefik.http.routers.portainer-searchdomain.rule=Host(`portainer.${SEARCH_DOMAIN}`)"
-      - "traefik.http.routers.portainer-searchdomain.tls.certresolver=cloudflare"
-      - "traefik.http.routers.portainer-searchdomain.service=portainer-service"
-      # Service definition
-      - "traefik.http.services.portainer-service.loadbalancer.server.port=9000"
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1m"
-        max-file: "1"
+  # portainer:
+  #   image: portainer/portainer-ce:latest
+  #   container_name: portainer
+  #   restart: unless-stopped
+  #   security_opt:
+  #     - no-new-privileges:true
+  #   cap_drop:
+  #     - ALL
+  #   cap_add:
+  #     - CHOWN
+  #     - SETGID
+  #     - SETUID
+  #     - DAC_OVERRIDE
+  #   networks:
+  #     - proxy
+  #   volumes:
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - /home/ubuntu/docker-data/portainer:/data
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.docker.network=proxy"
+  #     # Route for duckdns domain
+  #     - "traefik.http.routers.portainer-secure.entrypoints=websecure"
+  #     - "traefik.http.routers.portainer-secure.rule=Host(`portainer.${DUCKDNS_DOMAIN}`)"
+  #     - "traefik.http.routers.portainer-secure.tls.certresolver=duckdns"
+  #     - "traefik.http.routers.portainer-secure.service=portainer-service"
+  #     # Route for search domain
+  #     - "traefik.http.routers.portainer-searchdomain.entrypoints=websecure"
+  #     - "traefik.http.routers.portainer-searchdomain.rule=Host(`portainer.${SEARCH_DOMAIN}`)"
+  #     - "traefik.http.routers.portainer-searchdomain.tls.certresolver=cloudflare"
+  #     - "traefik.http.routers.portainer-searchdomain.service=portainer-service"
+  #     # Service definition
+  #     - "traefik.http.services.portainer-service.loadbalancer.server.port=9000"
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 256M
+  #       reservations:
+  #         memory: 128M
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "1m"
+  #       max-file: "1"
 
 ####################################################################################################
 
@@ -231,10 +232,10 @@ services:
       - USER_GID=1000
       - USER=git
       - RUN_MODE=prod
-      - DOMAIN=gitea.${DUCKDNS_DOMAIN}
-      - SSH_DOMAIN=gitea.${DUCKDNS_DOMAIN}
+      - DOMAIN=gitea.${SEARCH_DOMAIN}
+      - SSH_DOMAIN=gitea.${SEARCH_DOMAIN}
       - HTTP_PORT=3000
-      - ROOT_URL=https://gitea.${DUCKDNS_DOMAIN}
+      - ROOT_URL=https://gitea.${SEARCH_DOMAIN}
       - SSH_PORT=222
       - SSH_LISTEN_PORT=22
       - DB_TYPE=sqlite3
@@ -254,10 +255,10 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       # Route for duckdns domain
-      - "traefik.http.routers.gitea-secure.entrypoints=websecure"
-      - "traefik.http.routers.gitea-secure.rule=Host(`gitea.${DUCKDNS_DOMAIN}`)"
-      - "traefik.http.routers.gitea-secure.tls.certresolver=duckdns"
-      - "traefik.http.routers.gitea-secure.service=gitea-service"
+      # - "traefik.http.routers.gitea-secure.entrypoints=websecure"
+      # - "traefik.http.routers.gitea-secure.rule=Host(`gitea.${DUCKDNS_DOMAIN}`)"
+      # - "traefik.http.routers.gitea-secure.tls.certresolver=duckdns"
+      # - "traefik.http.routers.gitea-secure.service=gitea-service"
       # Route for search domain
       - "traefik.http.routers.gitea-searchdomain.entrypoints=websecure"
       - "traefik.http.routers.gitea-searchdomain.rule=Host(`gitea.${SEARCH_DOMAIN}`)"
@@ -416,12 +417,12 @@ services:
       - "traefik.docker.network=proxy"
       # Route for duckdns domain
       - "traefik.http.routers.uptime-kuma-secure.entrypoints=websecure"
-      - "traefik.http.routers.uptime-kuma-secure.rule=Host(`uptime-kuma.${DUCKDNS_DOMAIN}`)"
+      - "traefik.http.routers.uptime-kuma-secure.rule=Host(`uptime.${DUCKDNS_DOMAIN}`)"
       - "traefik.http.routers.uptime-kuma-secure.tls.certresolver=duckdns"
       - "traefik.http.routers.uptime-kuma-secure.service=uptime-kuma-service"
       # Route for search domain
       - "traefik.http.routers.uptime-kuma-searchdomain.entrypoints=websecure"
-      - "traefik.http.routers.uptime-kuma-searchdomain.rule=Host(`uptime-kuma.${SEARCH_DOMAIN}`)"
+      - "traefik.http.routers.uptime-kuma-searchdomain.rule=Host(`uptime.${SEARCH_DOMAIN}`)"
       - "traefik.http.routers.uptime-kuma-searchdomain.tls.certresolver=cloudflare"
       - "traefik.http.routers.uptime-kuma-searchdomain.service=uptime-kuma-service"
       # Service definition
@@ -449,6 +450,9 @@ services:
   searxng:
     container_name: searxng
     image: docker.io/searxng/searxng:latest
+    depends_on:
+      - traefik
+      - searxng-redis
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
@@ -464,15 +468,15 @@ services:
     volumes:
       - /home/ubuntu/docker-data/searxng:/etc/searxng:rw
     environment:
-      - SEARXNG_BASE_URL=https://search.${DUCKDNS_DOMAIN}/
+      - SEARXNG_BASE_URL=https://search.${SEARCH_DOMAIN}/
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       # Route for duckdns domain (uses duckdns cert)
-      - "traefik.http.routers.searxng-secure.entrypoints=websecure"
-      - "traefik.http.routers.searxng-secure.rule=Host(`search.${DUCKDNS_DOMAIN}`)"
-      - "traefik.http.routers.searxng-testdomain.tls.certresolver=duckdns"
-      - "traefik.http.routers.searxng-secure.service=searxng-service"
+      # - "traefik.http.routers.searxng-secure.entrypoints=websecure"
+      # - "traefik.http.routers.searxng-secure.rule=Host(`search.${DUCKDNS_DOMAIN}`)"
+      # - "traefik.http.routers.searxng-testdomain.tls.certresolver=duckdns"
+      # - "traefik.http.routers.searxng-secure.service=searxng-service"
       # Route for test.com domain (uses cloudflare cert)
       - "traefik.http.routers.searxng-testdomain.entrypoints=websecure"
       - "traefik.http.routers.searxng-testdomain.rule=Host(`search.${SEARCH_DOMAIN}`)"
