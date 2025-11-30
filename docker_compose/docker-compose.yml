@@ -416,10 +416,10 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       # Route for duckdns domain
-      - "traefik.http.routers.uptime-kuma-secure.entrypoints=websecure"
-      - "traefik.http.routers.uptime-kuma-secure.rule=Host(`uptime.${DUCKDNS_DOMAIN}`)"
-      - "traefik.http.routers.uptime-kuma-secure.tls.certresolver=duckdns"
-      - "traefik.http.routers.uptime-kuma-secure.service=uptime-kuma-service"
+      # - "traefik.http.routers.uptime-kuma-secure.entrypoints=websecure"
+      # - "traefik.http.routers.uptime-kuma-secure.rule=Host(`uptime.${DUCKDNS_DOMAIN}`)"
+      # - "traefik.http.routers.uptime-kuma-secure.tls.certresolver=duckdns"
+      # - "traefik.http.routers.uptime-kuma-secure.service=uptime-kuma-service"
       # Route for search domain
       - "traefik.http.routers.uptime-kuma-searchdomain.entrypoints=websecure"
       - "traefik.http.routers.uptime-kuma-searchdomain.rule=Host(`uptime.${SEARCH_DOMAIN}`)"
