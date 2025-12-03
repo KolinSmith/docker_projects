@@ -210,12 +210,117 @@ services:
   #       max-file: "1"
 ####################################################################################################
 
-  gitea:
-    image: gitea/gitea:latest
-    container_name: gitea
+  # gitea:
+  #   image: gitea/gitea:latest
+  #   container_name: gitea
+  #   depends_on:
+  #     - traefik
+  #     - gitea-cache
+  #   restart: unless-stopped
+  #   security_opt:
+  #     - no-new-privileges:true
+  #   cap_drop:
+  #     - ALL
+  #   cap_add:
+  #     - CHOWN
+  #     - SETGID
+  #     - SETUID
+  #     - DAC_OVERRIDE
+  #   environment:
+  #     - APP_NAME="Gitea"
+  #     - USER_UID=1000
+  #     - USER_GID=1000
+  #     - USER=git
+  #     - RUN_MODE=prod
+  #     - DOMAIN=gitea.${SEARCH_DOMAIN}
+  #     - SSH_DOMAIN=gitea.${SEARCH_DOMAIN}
+  #     - HTTP_PORT=3000
+  #     - ROOT_URL=https://gitea.${SEARCH_DOMAIN}
+  #     - SSH_PORT=222
+  #     - SSH_LISTEN_PORT=22
+  #     - DB_TYPE=sqlite3
+  #     - GITEA__cache__ENABLED=true
+  #     - GITEA__cache__ADAPTER=redis
+  #     - GITEA__cache__HOST=redis://gitea-cache:6379/0?pool_size=100&idle_timeout=180s
+  #     - GITEA__cache__ITEM_TTL=24h
+  #   networks:
+  #     - proxy
+  #   volumes:
+  #     - /home/ubuntu/docker-data/gitea:/data
+  #     - /etc/timezone:/etc/timezone:ro
+  #     - /etc/localtime:/etc/localtime:ro
+  #   ports:
+  #     - "222:22"
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.docker.network=proxy"
+  #     # Route for duckdns domain
+  #     # - "traefik.http.routers.gitea-secure.entrypoints=websecure"
+  #     # - "traefik.http.routers.gitea-secure.rule=Host(`gitea.${DUCKDNS_DOMAIN}`)"
+  #     # - "traefik.http.routers.gitea-secure.tls.certresolver=duckdns"
+  #     # - "traefik.http.routers.gitea-secure.service=gitea-service"
+  #     # Route for search domain
+  #     - "traefik.http.routers.gitea-searchdomain.entrypoints=websecure"
+  #     - "traefik.http.routers.gitea-searchdomain.rule=Host(`gitea.${SEARCH_DOMAIN}`)"
+  #     - "traefik.http.routers.gitea-searchdomain.tls.certresolver=cloudflare"
+  #     - "traefik.http.routers.gitea-searchdomain.service=gitea-service"
+  #     # Service definition
+  #     - "traefik.http.services.gitea-service.loadbalancer.server.port=3000"
+  #   # healthcheck:
+  #   #   test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+  #   #   interval: 30s
+  #   #   timeout: 5s
+  #   #   retries: 3
+  #   #   start_period: 10s
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 512M
+  #       reservations:
+  #         memory: 128M
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "1m"
+  #       max-file: "1"
+
+  # gitea-cache:
+  #   container_name: gitea-cache
+  #   image: docker.io/valkey/valkey:8-alpine
+  #   restart: unless-stopped
+  #   security_opt:
+  #     - no-new-privileges:true
+  #   cap_drop:
+  #     - ALL
+  #   cap_add:
+  #     - SETGID
+  #     - SETUID
+  #     - DAC_OVERRIDE
+  #   networks:
+  #     - proxy
+  #   # healthcheck:
+  #   #   test: ["CMD", "valkey-cli", "ping"]
+  #   #   interval: 15s
+  #   #   timeout: 3s
+  #   #   retries: 30
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 128M
+  #       reservations:
+  #         memory: 64M
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "1m"
+  #       max-file: "1"
+
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:9
+    container_name: forgejo
     depends_on:
       - traefik
-      - gitea-cache
+      - forgejo-cache
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
@@ -227,26 +332,26 @@ services:
       - SETUID
       - DAC_OVERRIDE
     environment:
-      - APP_NAME="Gitea"
+      - APP_NAME="Forgejo"
       - USER_UID=1000
       - USER_GID=1000
       - USER=git
       - RUN_MODE=prod
-      - DOMAIN=gitea.${SEARCH_DOMAIN}
-      - SSH_DOMAIN=gitea.${SEARCH_DOMAIN}
+      - DOMAIN=git.${SEARCH_DOMAIN}
+      - SSH_DOMAIN=git.${SEARCH_DOMAIN}
       - HTTP_PORT=3000
-      - ROOT_URL=https://gitea.${SEARCH_DOMAIN}
+      - ROOT_URL=https://git.${SEARCH_DOMAIN}
       - SSH_PORT=222
       - SSH_LISTEN_PORT=22
       - DB_TYPE=sqlite3
-      - GITEA__cache__ENABLED=true
-      - GITEA__cache__ADAPTER=redis
-      - GITEA__cache__HOST=redis://gitea-cache:6379/0?pool_size=100&idle_timeout=180s
-      - GITEA__cache__ITEM_TTL=24h
+      - FORGEJO__cache__ENABLED=true
+      - FORGEJO__cache__ADAPTER=redis
+      - FORGEJO__cache__HOST=redis://forgejo-cache:6379/0?pool_size=100&idle_timeout=180s
+      - FORGEJO__cache__ITEM_TTL=24h
     networks:
       - proxy
     volumes:
-      - /home/ubuntu/docker-data/gitea:/data
+      - /home/ubuntu/docker-data/forgejo:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
@@ -255,17 +360,17 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       # Route for duckdns domain
-      # - "traefik.http.routers.gitea-secure.entrypoints=websecure"
-      # - "traefik.http.routers.gitea-secure.rule=Host(`gitea.${DUCKDNS_DOMAIN}`)"
-      # - "traefik.http.routers.gitea-secure.tls.certresolver=duckdns"
-      # - "traefik.http.routers.gitea-secure.service=gitea-service"
+      # - "traefik.http.routers.forgejo-secure.entrypoints=websecure"
+      # - "traefik.http.routers.forgejo-secure.rule=Host(`git.${DUCKDNS_DOMAIN}`)"
+      # - "traefik.http.routers.forgejo-secure.tls.certresolver=duckdns"
+      # - "traefik.http.routers.forgejo-secure.service=forgejo-service"
       # Route for search domain
-      - "traefik.http.routers.gitea-searchdomain.entrypoints=websecure"
-      - "traefik.http.routers.gitea-searchdomain.rule=Host(`gitea.${SEARCH_DOMAIN}`)"
-      - "traefik.http.routers.gitea-searchdomain.tls.certresolver=cloudflare"
-      - "traefik.http.routers.gitea-searchdomain.service=gitea-service"
+      - "traefik.http.routers.forgejo-searchdomain.entrypoints=websecure"
+      - "traefik.http.routers.forgejo-searchdomain.rule=Host(`git.${SEARCH_DOMAIN}`)"
+      - "traefik.http.routers.forgejo-searchdomain.tls.certresolver=cloudflare"
+      - "traefik.http.routers.forgejo-searchdomain.service=forgejo-service"
       # Service definition
-      - "traefik.http.services.gitea-service.loadbalancer.server.port=3000"
+      - "traefik.http.services.forgejo-service.loadbalancer.server.port=3000"
     # healthcheck:
     #   test: ["CMD", "curl", "-f", "http://localhost:3000/"]
     #   interval: 30s
@@ -284,8 +389,8 @@ services:
         max-size: "1m"
         max-file: "1"
 
-  gitea-cache:
-    container_name: gitea-cache
+  forgejo-cache:
+    container_name: forgejo-cache
     image: docker.io/valkey/valkey:8-alpine
     restart: unless-stopped
     security_opt:
@@ -306,9 +411,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M      
+          memory: 128M
         reservations:
-          memory: 64M       
+          memory: 64M
     logging:
       driver: "json-file"
       options:
