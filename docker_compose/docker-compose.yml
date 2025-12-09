@@ -637,6 +637,45 @@ services:
 
 ####################################################################################################
 
+  capture:
+    image: ghcr.io/bluewave-labs/capture:latest
+    container_name: capture
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    networks:
+      - proxy
+    ports:
+      - "59232:59232"
+    environment:
+      - API_SECRET=nilok3
+      # - API_SECRET=${CAPTURE_API_SECRET}
+      - GIN_MODE=release
+    volumes:
+      - /etc/os-release:/etc/os-release:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+####################################################################################################
+
 networks:
   proxy:
     external: true
