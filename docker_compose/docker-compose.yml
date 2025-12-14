@@ -583,10 +583,10 @@ services:
       # - "traefik.http.routers.searxng-testdomain.tls.certresolver=duckdns"
       # - "traefik.http.routers.searxng-secure.service=searxng-service"
       # Route for test.com domain (uses cloudflare cert)
-      - "traefik.http.routers.searxng-testdomain.entrypoints=websecure"
-      - "traefik.http.routers.searxng-testdomain.rule=Host(`search.${SEARCH_DOMAIN}`)"
-      - "traefik.http.routers.searxng-testdomain.tls.certresolver=cloudflare"
-      - "traefik.http.routers.searxng-testdomain.service=searxng-service"
+      - "traefik.http.routers.searxng-searchdomain.entrypoints=websecure"
+      - "traefik.http.routers.searxng-searchdomain.rule=Host(`search.${SEARCH_DOMAIN}`)"
+      - "traefik.http.routers.searxng-searchdomain.tls.certresolver=cloudflare"
+      - "traefik.http.routers.searxng-searchdomain.service=searxng-service"
       # Service definition
       - "traefik.http.services.searxng-service.loadbalancer.server.port=8080"
     deploy:
@@ -662,6 +662,16 @@ services:
       - /etc/os-release:/etc/os-release:ro
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      # Route for search domain
+      - "traefik.http.routers.capture-searchdomain.entrypoints=websecure"
+      - "traefik.http.routers.capture-searchdomain.rule=Host(`capture.${SEARCH_DOMAIN}`)"
+      - "traefik.http.routers.capture-searchdomain.tls.certresolver=cloudflare"
+      - "traefik.http.routers.capture-searchdomain.service=capture-service"
+      # Service definition
+      - "traefik.http.services.capture-service.loadbalancer.server.port=59232"
     deploy:
       resources:
         limits:
