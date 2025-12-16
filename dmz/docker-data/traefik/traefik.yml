@@ -1,0 +1,55 @@
+api:
+  dashboard: true
+  debug: true
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+  websecure:
+    address: ":443"
+    http:
+      middlewares:
+        - secureHeaders@file
+      tls:
+        certResolver: duckdns
+        domains:
+          - main: papermario.duckdns.org
+            sans:
+              - "*.papermario.duckdns.org"
+
+serversTransport:
+  insecureSkipVerify: true
+
+log:
+  level: DEBUG
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: proxy
+    watch: true
+  file:
+    filename: /configurations/dynamic.yml
+
+certificatesResolvers:
+  duckdns:
+    acme:
+      email: kolinksmith@gmail.com
+      storage: acme.json
+      dnsChallenge:
+        provider: duckdns
+
+  cloudflare:
+    acme:
+      email: kolinksmith@gmail.com
+      storage: acme-cloudflare.json
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1:53"
+          - "1.0.0.1:53"
