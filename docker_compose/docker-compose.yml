@@ -583,10 +583,10 @@ services:
       # - "traefik.http.routers.searxng-testdomain.tls.certresolver=duckdns"
       # - "traefik.http.routers.searxng-secure.service=searxng-service"
       # Route for test.com domain (uses cloudflare cert)
-      - "traefik.http.routers.searxng-testdomain.entrypoints=websecure"
-      - "traefik.http.routers.searxng-testdomain.rule=Host(`search.${SEARCH_DOMAIN}`)"
-      - "traefik.http.routers.searxng-testdomain.tls.certresolver=cloudflare"
-      - "traefik.http.routers.searxng-testdomain.service=searxng-service"
+      - "traefik.http.routers.searxng-searchdomain.entrypoints=websecure"
+      - "traefik.http.routers.searxng-searchdomain.rule=Host(`search.${SEARCH_DOMAIN}`)"
+      - "traefik.http.routers.searxng-searchdomain.tls.certresolver=cloudflare"
+      - "traefik.http.routers.searxng-searchdomain.service=searxng-service"
       # Service definition
       - "traefik.http.services.searxng-service.loadbalancer.server.port=8080"
     deploy:
@@ -629,6 +629,54 @@ services:
           memory: 256M
         reservations:
           memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+####################################################################################################
+
+  capture:
+    image: ghcr.io/bluewave-labs/capture:latest
+    container_name: capture
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    networks:
+      - proxy
+    ports:
+      - "59232:59232"
+    environment:
+      - API_SECRET=${CAPTURE_API_SECRET} # set in the .env file
+      - GIN_MODE=release
+    volumes:
+      - /etc/os-release:/etc/os-release:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      # Route for search domain
+      - "traefik.http.routers.capture-searchdomain.entrypoints=websecure"
+      - "traefik.http.routers.capture-searchdomain.rule=Host(`capture.${SEARCH_DOMAIN}`)"
+      - "traefik.http.routers.capture-searchdomain.tls.certresolver=cloudflare"
+      - "traefik.http.routers.capture-searchdomain.service=capture-service"
+      # Service definition
+      - "traefik.http.services.capture-service.loadbalancer.server.port=59232"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
     logging:
       driver: "json-file"
       options:
