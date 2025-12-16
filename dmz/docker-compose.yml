@@ -685,6 +685,54 @@ services:
 
 ####################################################################################################
 
+bentopdf:
+    image: bentopdf/bentopdf-simple:latest
+    container_name: bentopdf
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    networks:
+      - proxy
+    ports:
+      - '3000:8080'
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - /etc/os-release:/etc/os-release:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /dev/shm:/dev/shm
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      # Route for search domain
+      - "traefik.http.routers.bentopdf-homedomain.entrypoints=websecure"
+      - "traefik.http.routers.bentopdf-homedomain.rule=Host(`pdf.${SEARCH_DOMAIN}`)"
+      - "traefik.http.routers.bentopdf-homedomain.tls.certresolver=cloudflare"
+      - "traefik.http.routers.bentopdf-homedomain.service=bentopdf-service"
+      # Service definition
+      - "traefik.http.services.bentopdf-service.loadbalancer.server.port=8080"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "2"
+
+####################################################################################################        
+
 networks:
   proxy:
     external: true
