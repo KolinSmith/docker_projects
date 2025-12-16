@@ -685,7 +685,7 @@ services:
 
 ####################################################################################################
 
-bentopdf:
+  bentopdf:
     image: bentopdf/bentopdf-simple:latest
     container_name: bentopdf
     restart: unless-stopped
@@ -704,7 +704,7 @@ bentopdf:
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
-      - TZ=${TZ}
+      - TZ=America/Chicago
     volumes:
       - /etc/os-release:/etc/os-release:ro
       - /etc/localtime:/etc/localtime:ro
