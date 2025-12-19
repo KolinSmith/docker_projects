@@ -50,9 +50,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
-        reservations:
           memory: 128M
+        reservations:
+          memory: 64M
     logging:
       driver: "json-file"
       options:
@@ -380,9 +380,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 256M
         reservations:
-          memory: 128M
+          memory: 64M
     logging:
       driver: "json-file"
       options:
@@ -411,9 +411,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
-        reservations:
           memory: 64M
+        reservations:
+          memory: 32M
     logging:
       driver: "json-file"
       options:
@@ -541,9 +541,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-        reservations:
           memory: 256M
+        reservations:
+          memory: 128M
     logging:
       driver: "json-file"
       options:
@@ -592,9 +592,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-        reservations:
           memory: 256M
+        reservations:
+          memory: 128M
     logging:
       driver: "json-file"
       options:
@@ -626,9 +626,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
-        reservations:
           memory: 128M
+        reservations:
+          memory: 64M
     logging:
       driver: "json-file"
       options:
@@ -674,9 +674,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
-        reservations:
           memory: 64M
+        reservations:
+          memory: 32M
     logging:
       driver: "json-file"
       options:
@@ -685,7 +685,7 @@ services:
 
 ####################################################################################################
 
-  bentopdf:
+  bentopdf: #https://github.com/alam00000/bentopdf/blob/main/SIMPLE_MODE.md
     image: bentopdf/bentopdf-simple:latest
     container_name: bentopdf
     restart: unless-stopped
@@ -722,16 +722,16 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-        reservations:
           memory: 256M
+        reservations:
+          memory: 128M
     logging:
       driver: "json-file"
       options:
         max-size: "1m"
         max-file: "2"
 
-####################################################################################################        
+####################################################################################################
 
 networks:
   proxy:
