@@ -1,0 +1,40 @@
+## Tor Middle Relay Configuration
+## Converted from /etc/tor/torrc on operator server
+
+# Disable SOCKS proxy (relay only)
+SOCKSPort 0
+SOCKSPolicy reject *
+
+# Logging
+Log notice file /var/log/tor/notices.log
+
+# Run as daemon
+RunAsDaemon 1
+
+# Data directory
+DataDirectory /var/lib/tor
+
+# Control port for monitoring
+ControlPort 9051
+CookieAuthentication 1
+
+################ Relay Configuration #####################
+
+# ORPort - main Tor relay port
+ORPort 8443
+
+# DirPort - directory information mirror
+DirPort 8444
+
+# Relay nickname
+Nickname operaTor
+
+# Bandwidth limits
+RelayBandwidthRate 1000 KBytes   # Throttle traffic to 1MB/s
+RelayBandwidthBurst 1500 KBytes  # Allow bursts up to 1.5MB/s
+
+# Contact information
+ContactInfo torrelay_operator.isothermally@8shield.net
+
+# Exit policy - middle relay only, no exits
+ExitPolicy reject *:*

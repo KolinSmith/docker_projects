@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  tor-relay:
+    image: thetorproject/obfs4-bridge:latest
+    container_name: tor_relay
+    restart: unless-stopped
+
+    ports:
+      - "8443:8443"  # ORPort
+      - "8444:8444"  # DirPort
+
+    volumes:
+      - ./torrc:/etc/tor/torrc:ro
+      - tor_data:/var/lib/tor
+      - tor_logs:/var/log/tor
+
+    environment:
+      - TOR_NICKNAME=operaTor
+      - TOR_CONTACT_INFO=torrelay_operator.isothermally@8shield.net
+
+    # Resource limits based on current usage (~600MB RAM)
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+    networks:
+      - tor_network
+
+volumes:
+  tor_data:
+    driver: local
+  tor_logs:
+    driver: local
+
+networks:
+  tor_network:
+    driver: bridge
