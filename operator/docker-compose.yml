@@ -13,10 +13,8 @@ services:
       - SETGID
       - SETUID
       - DAC_OVERRIDE
-    environment:
-      - API_SECRET=nilok3
-      # - API_SECRET=${CAPTURE_API_SECRET}
-      - GIN_MODE=release
+    env_file:
+      - .env
     volumes:
       - /etc/os-release:/etc/os-release:ro
       - /etc/localtime:/etc/localtime:ro

@@ -15,8 +15,9 @@ services:
       - DAC_OVERRIDE
     ports:
       - "59232:59232"
+    env_file:
+      - .env
     environment:
-      - API_SECRET=${CAPTURE_API_SECRET}
       - GIN_MODE=release
     volumes:
       - /etc/os-release:/etc/os-release:ro
