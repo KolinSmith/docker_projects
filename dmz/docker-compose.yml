@@ -733,6 +733,47 @@ services:
 
 ####################################################################################################
 
+  landing:
+    image: nginx:alpine
+    container_name: landing
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    networks:
+      - proxy
+    volumes:
+      - ./landing:/usr/share/nginx/html:ro
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      # Route for hidden domain (configure in .env)
+      - "traefik.http.routers.landing-secure.entrypoints=websecure"
+      - "traefik.http.routers.landing-secure.rule=Host(`${HIDDEN_DOMAIN}`) || Host(`www.${HIDDEN_DOMAIN}`)"
+      - "traefik.http.routers.landing-secure.tls.certresolver=cloudflare"
+      - "traefik.http.routers.landing-secure.service=landing-service"
+      # Service definition
+      - "traefik.http.services.landing-service.loadbalancer.server.port=80"
+    deploy:
+      resources:
+        limits:
+          memory: 32M
+        reservations:
+          memory: 16M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+####################################################################################################
+
 networks:
   proxy:
     external: true

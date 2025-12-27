@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hidden.exe</title>
+    <link rel="stylesheet" href="https://unpkg.com/98.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #008080;
+            font-family: "MS Sans Serif", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+        }
+
+        .window {
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .response-text {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: #c0c0c0;
+            border: 2px solid #808080;
+        }
+
+        .response-text.active {
+            display: block;
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="window">
+            <div class="title-bar">
+                <div class="title-bar-text">hidden.exe</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Minimize" disabled></button>
+                    <button aria-label="Maximize" disabled></button>
+                    <button aria-label="Close" disabled></button>
+                </div>
+            </div>
+            <div class="window-body">
+                <p style="margin-top: 0;">
+                    <strong>How did you find this place?</strong>
+                </p>
+                <p style="font-size: 12px; color: #555;">
+                    This domain doesn't appear in search engines.<br>
+                    You must have been looking for something...
+                </p>
+
+                <div id="response-curious" class="response-text">
+                    <p>Welcome, curious traveler. 🧭</p>
+                    <p>This is a quiet corner of the internet. Nothing much to see here—just a placeholder for future projects and experiments.</p>
+                    <p>Feel free to poke around, but there's really nothing hidden... or is there? <span class="blink">_</span></p>
+                </div>
+
+                <div id="response-breadcrumbs" class="response-text">
+                    <p>Ah, a fellow treasure hunter. 🗺️</p>
+                    <p>You followed the clues well. This domain serves as:</p>
+                    <ul>
+                        <li>A personal testing ground</li>
+                        <li>Future home of experimental projects</li>
+                        <li>A nostalgic nod to simpler web times</li>
+                    </ul>
+                    <p>Check back later for updates. Or don't. <span class="blink">_</span></p>
+                </div>
+
+                <section class="field-row" style="justify-content: flex-end; margin-top: 15px;">
+                    <button onclick="showResponse('curious')">I'm just curious</button>
+                    <button onclick="showResponse('breadcrumbs')">I followed the breadcrumbs</button>
+                </section>
+            </div>
+        </div>
+
+        <div class="window" style="margin-top: 20px;">
+            <div class="title-bar">
+                <div class="title-bar-text">System Info</div>
+            </div>
+            <div class="window-body">
+                <div class="field-row-stacked" style="font-size: 11px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Domain:</span>
+                        <span id="domain-name" style="font-family: monospace;"></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Status:</span>
+                        <span style="color: green;">● Active</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Purpose:</span>
+                        <span style="font-style: italic;">Unknown</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Populate domain name dynamically
+        document.getElementById('domain-name').textContent = window.location.hostname;
+
+        function showResponse(type) {
+            // Hide all responses
+            document.querySelectorAll('.response-text').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show selected response
+            if (type === 'curious') {
+                document.getElementById('response-curious').classList.add('active');
+            } else if (type === 'breadcrumbs') {
+                document.getElementById('response-breadcrumbs').classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
