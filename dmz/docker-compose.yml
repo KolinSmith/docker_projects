@@ -331,6 +331,7 @@ services:
       - SETGID
       - SETUID
       - DAC_OVERRIDE
+      - SYS_CHROOT
     environment:
       - APP_NAME="Forgejo"
       - USER_UID=1000
