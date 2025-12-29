@@ -32,7 +32,7 @@ services:
       REV_SERVER: 'true'
       REV_SERVER_CIDR: '192.168.3.0/24'
       REV_SERVER_TARGET: '192.168.3.1'
-      REV_SERVER_DOMAIN: 'pfsense.localdomain'
+      REV_SERVER_DOMAIN: 'pfsense.internal.homelab.gg'
 
       # Query logging
       QUERY_LOGGING: 'true'
