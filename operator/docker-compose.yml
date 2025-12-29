@@ -40,3 +40,38 @@ services:
       options:
         max-size: "1m"
         max-file: "1"
+
+  tor-relay:
+    image: ghcr.io/kolinsmith/tor-relay-docker:latest
+    container_name: tor-relay
+    restart: unless-stopped
+    ports:
+      - "${TOR_OR_PORT:-8443}:8443"   # ORPort
+      - "${TOR_DIR_PORT:-8444}:8444"  # DirPort
+    volumes:
+      - ./torrc:/etc/tor/torrc:ro
+      - tor_data:/var/lib/tor
+      - tor_logs:/var/log/tor
+    env_file:
+      - .env
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  tor_data:
+    driver: local
+  tor_logs:
+    driver: local
