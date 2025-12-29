@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  pihole:
+    container_name: pihole-ds9
+    image: pihole/pihole:latest
+    hostname: ds9
+    ports:
+      - "53:53/tcp"      # DNS TCP
+      - "53:53/udp"      # DNS UDP
+      - "80:80/tcp"      # Web interface (HTTP)
+      # - "443:443/tcp"  # Web interface (HTTPS) - uncomment if needed
+    environment:
+      # Timezone
+      TZ: 'America/Chicago'
+
+      # Web password (hashed - set in .env)
+      WEBPASSWORD: '${PIHOLE_WEBPASSWORD}'
+
+      # Upstream DNS servers (pfSense)
+      PIHOLE_DNS_: '192.168.3.1'
+
+      # DNSSEC validation
+      DNSSEC: 'true'
+
+      # DNS settings
+      DNSMASQ_LISTENING: 'single'
+      DNS_FQDN_REQUIRED: 'true'
+      DNS_BOGUS_PRIV: 'true'
+
+      # Reverse DNS server settings
+      REV_SERVER: 'true'
+      REV_SERVER_CIDR: '192.168.3.0/24'
+      REV_SERVER_TARGET: '192.168.3.1'
+      REV_SERVER_DOMAIN: 'pfsense.localdomain'
+
+      # Query logging
+      QUERY_LOGGING: 'true'
+
+      # Web interface
+      INSTALL_WEB_SERVER: 'true'
+      INSTALL_WEB_INTERFACE: 'true'
+
+      # Cache size
+      FTLCONF_MAXDBDAYS: '10000'
+
+      # Interface (container uses eth0 by default)
+      INTERFACE: 'eth0'
+
+      # Virtual host (optional)
+      VIRTUAL_HOST: 'ds9.internal.homelab.gg'
+
+      # IPv6 (disabled if not using)
+      IPv6: 'false'
+
+    volumes:
+      # Persistent configuration
+      - './etc-pihole:/etc/pihole'
+      - './etc-dnsmasq.d:/etc/dnsmasq.d'
+
+    dns:
+      # Use localhost for DNS resolution during startup
+      - 127.0.0.1
+      - 192.168.3.1
+
+    restart: unless-stopped
+
+    cap_drop:
+      - ALL
+
+    cap_add:
+      - NET_ADMIN      # Required for DHCP and network operations
+      - NET_BIND_SERVICE  # Required to bind to privileged ports (53, 80)
+      - NET_RAW        # Required for DHCP
+      - CHOWN          # Required for file ownership changes
+      - DAC_OVERRIDE   # Required for file permission overrides
+
+    security_opt:
+      - no-new-privileges:true
+
+    networks:
+      - pihole_network
+
+networks:
+  pihole_network:
+    driver: bridge

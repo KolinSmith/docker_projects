@@ -1,0 +1,23 @@
+# Custom DNS Overrides for Pi-hole
+# Copy this file to etc-dnsmasq.d/03-dns-overrides.conf after first container startup
+#
+# This file defines custom DNS records for internal homelab services
+# Format: address=/domain.name/ip.address
+
+# Dev server
+address=/voyager.internal.homelab.gg/192.168.9.103
+
+# pfSense router
+address=/pfsense.internal.homelab.gg/192.168.3.1
+
+# Discovery server
+address=/discovery.internal.homelab.gg/192.168.9.9
+
+# Borg backup server
+address=/borg.internal.homelab.gg/192.168.9.7
+
+# K3s cluster
+address=/k3s-cluster.local/192.168.9.124
+
+# Add additional custom DNS entries below
+# address=/myservice.internal.homelab.gg/192.168.9.X

@@ -1,0 +1,9 @@
+# Environment files with secrets
+.env
+
+# Pi-hole data directories (created at runtime)
+etc-pihole/
+etc-dnsmasq.d/
+
+# Logs
+*.log
