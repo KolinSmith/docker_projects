@@ -1,3 +1,11 @@
 .local_settings.py
 .env
 acme.json
+
+# Beszel monitoring data (generated at runtime)
+**/beszel_data/
+**/beszel_agent_data/
+**/beszel_socket/
+
+# Security audit reports (may contain sensitive info)
+SECURITY_AUDIT_*.md
