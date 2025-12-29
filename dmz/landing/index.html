@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Windows 98</title>
+    <link rel="stylesheet" href="https://unpkg.com/98.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #008080;
+            font-family: "MS Sans Serif", sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Desktop */
+        .desktop {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 40px);
+            padding: 10px;
+            overflow: auto;
+        }
+
+        /* Desktop Icons */
+        .desktop-icon {
+            width: 80px;
+            text-align: center;
+            margin: 10px;
+            cursor: pointer;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .desktop-icon img {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 5px;
+        }
+
+        .desktop-icon-text {
+            color: white;
+            font-size: 11px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            word-wrap: break-word;
+        }
+
+        .desktop-icon:hover .desktop-icon-text {
+            background: #000080;
+        }
+
+        /* Windows */
+        .window {
+            position: absolute;
+            min-width: 300px;
+            max-width: 90%;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 10;
+        }
+
+        .window.active {
+            display: block;
+            z-index: 100;
+        }
+
+        .window.minimized {
+            display: none;
+        }
+
+        .title-bar {
+            cursor: move;
+        }
+
+        .title-bar-controls button {
+            cursor: pointer;
+        }
+
+        /* Taskbar */
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: #c0c0c0;
+            border-top: 2px solid white;
+            display: flex;
+            align-items: center;
+            padding: 2px;
+            z-index: 1000;
+        }
+
+        .start-button {
+            font-weight: bold;
+            margin-right: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .taskbar-items {
+            flex: 1;
+            display: flex;
+            gap: 2px;
+        }
+
+        .taskbar-item {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .system-tray {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 10px;
+            border-left: 2px solid #808080;
+            height: 100%;
+        }
+
+        .clock {
+            font-size: 11px;
+        }
+
+        /* Start Menu */
+        .start-menu {
+            position: fixed;
+            bottom: 40px;
+            left: 2px;
+            width: 200px;
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #808080 #808080 #dfdfdf;
+            display: none;
+            z-index: 1001;
+        }
+
+        .start-menu.active {
+            display: block;
+        }
+
+        .start-menu-item {
+            padding: 8px 30px 8px 40px;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            text-align: left;
+            background: #c0c0c0;
+        }
+
+        .start-menu-item:hover {
+            background: #000080;
+            color: white;
+        }
+
+        .start-menu-separator {
+            height: 2px;
+            background: #808080;
+            margin: 2px 0;
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Tab styling */
+        menu[role=tablist] {
+            margin: 0;
+            padding-left: 5px;
+        }
+
+        /* TreeView styling */
+        details summary {
+            cursor: pointer;
+        }
+
+        /* Progress bar animation */
+        @keyframes progress {
+            0% { background-position: 0 0; }
+            100% { background-position: 30px 0; }
+        }
+
+        .progress-animated {
+            animation: progress 1s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Desktop -->
+    <div class="desktop" id="desktop">
+        <!-- Desktop Icons -->
+        <div class="desktop-icon" ondblclick="openWindow('about-window')">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23c0c0c0' x='4' y='4' width='24' height='24'/%3E%3Cpath fill='%23000080' d='M6 6h20v4H6z'/%3E%3Cpath fill='%23fff' d='M8 8h16v2H8z'/%3E%3C/svg%3E" alt="About">
+            <div class="desktop-icon-text">About.txt</div>
+        </div>
+
+        <div class="desktop-icon" ondblclick="openWindow('explorer-window')">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23ffff00' d='M4 8h10l4 4h10v16H4z'/%3E%3Cpath fill='%23c0c0c0' d='M6 10h8l4 4h8v12H6z'/%3E%3C/svg%3E" alt="Explorer">
+            <div class="desktop-icon-text">My Computer</div>
+        </div>
+
+        <div class="desktop-icon" ondblclick="openWindow('guestbook-window')">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23fff' x='6' y='4' width='20' height='24'/%3E%3Cpath fill='%23000' d='M8 8h16v2H8zM8 12h16v2H8zM8 16h12v2H8z'/%3E%3C/svg%3E" alt="Guestbook">
+            <div class="desktop-icon-text">Guestbook</div>
+        </div>
+
+        <div class="desktop-icon" ondblclick="openWindow('links-window')">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle fill='%230000ff' cx='16' cy='16' r='12'/%3E%3Cpath fill='%23fff' d='M12 10h8v2h-8zM10 14h12v2H10zM12 18h8v2h-8z'/%3E%3C/svg%3E" alt="Links">
+            <div class="desktop-icon-text">Links</div>
+        </div>
+
+        <!-- About Window -->
+        <div class="window active" id="about-window" style="top: 50px; left: 50px; width: 500px;">
+            <div class="title-bar" onmousedown="startDrag(event, 'about-window')">
+                <div class="title-bar-text">About - hidden.exe</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Minimize" onclick="minimizeWindow('about-window')"></button>
+                    <button aria-label="Maximize" onclick="maximizeWindow('about-window')"></button>
+                    <button aria-label="Close" onclick="closeWindow('about-window')"></button>
+                </div>
+            </div>
+            <div class="window-body">
+                <p style="margin-top: 0;">
+                    <strong>How did you find this place?</strong>
+                </p>
+                <p style="font-size: 12px; color: #555;">
+                    This domain doesn't appear in search engines.<br>
+                    You must have been looking for something...
+                </p>
+
+                <div id="response-curious" class="response-text">
+                    <p>Welcome, curious traveler. 🧭</p>
+                    <p>This is a quiet corner of the internet. Nothing much to see here—just a placeholder for future projects and experiments.</p>
+                    <p>Feel free to poke around, but there's really nothing hidden... or is there? <span class="blink">_</span></p>
+                </div>
+
+                <div id="response-breadcrumbs" class="response-text">
+                    <p>Ah, a fellow treasure hunter. 🗺️</p>
+                    <p>You followed the clues well. This domain serves as:</p>
+                    <ul>
+                        <li>A personal testing ground</li>
+                        <li>Future home of experimental projects</li>
+                        <li>A nostalgic nod to simpler web times</li>
+                    </ul>
+                    <p>Check back later for updates. Or don't. <span class="blink">_</span></p>
+                </div>
+
+                <section class="field-row" style="justify-content: flex-end; margin-top: 15px;">
+                    <button onclick="showResponse('curious')">I'm just curious</button>
+                    <button onclick="showResponse('breadcrumbs')">I followed the breadcrumbs</button>
+                </section>
+
+                <div class="status-bar">
+                    <p class="status-bar-field">Welcome to <span id="domain-name"></span></p>
+                    <p class="status-bar-field">Status: Active</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Explorer Window with Tabs and TreeView -->
+        <div class="window" id="explorer-window" style="top: 100px; left: 100px; width: 600px;">
+            <div class="title-bar" onmousedown="startDrag(event, 'explorer-window')">
+                <div class="title-bar-text">My Computer - Windows Explorer</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Minimize" onclick="minimizeWindow('explorer-window')"></button>
+                    <button aria-label="Maximize" onclick="maximizeWindow('explorer-window')"></button>
+                    <button aria-label="Close" onclick="closeWindow('explorer-window')"></button>
+                </div>
+            </div>
+            <div class="window-body">
+                <menu role="tablist">
+                    <button role="tab" aria-selected="true" aria-controls="files-tab" onclick="switchTab('files-tab')">Files</button>
+                    <button role="tab" aria-controls="system-tab" onclick="switchTab('system-tab')">System Info</button>
+                    <button role="tab" aria-controls="about-tab" onclick="switchTab('about-tab')">About</button>
+                </menu>
+
+                <!-- Files Tab with TreeView -->
+                <div role="tabpanel" id="files-tab" class="active">
+                    <ul class="tree-view">
+                        <li>
+                            <details open>
+                                <summary>My Computer</summary>
+                                <ul>
+                                    <li>
+                                        <details>
+                                            <summary>C:\ (System)</summary>
+                                            <ul>
+                                                <li>
+                                                    <details>
+                                                        <summary>Program Files</summary>
+                                                        <ul>
+                                                            <li>Internet Explorer</li>
+                                                            <li>Windows Media Player</li>
+                                                            <li>Notepad</li>
+                                                        </ul>
+                                                    </details>
+                                                </li>
+                                                <li>
+                                                    <details>
+                                                        <summary>Windows</summary>
+                                                        <ul>
+                                                            <li>System32</li>
+                                                            <li>Desktop</li>
+                                                            <li>Fonts</li>
+                                                        </ul>
+                                                    </details>
+                                                </li>
+                                                <li>
+                                                    <details>
+                                                        <summary>My Documents</summary>
+                                                        <ul>
+                                                            <li>README.txt</li>
+                                                            <li>Secret_Plans.doc</li>
+                                                            <li>Definitely_Not_Suspicious.exe</li>
+                                                        </ul>
+                                                    </details>
+                                                </li>
+                                            </ul>
+                                        </details>
+                                    </li>
+                                    <li>D:\ (Empty)</li>
+                                    <li>E:\ (CD-ROM)</li>
+                                </ul>
+                            </details>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- System Info Tab -->
+                <div role="tabpanel" id="system-tab" style="display: none;">
+                    <fieldset>
+                        <legend>System Information</legend>
+                        <div class="field-row-stacked">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <label>Domain:</label>
+                                <span id="domain-name-2" style="font-family: monospace;"></span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <label>Operating System:</label>
+                                <span>Windows 98 Second Edition</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <label>Browser:</label>
+                                <span id="browser-info"></span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <label>Status:</label>
+                                <span style="color: green;">● Online</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <label>Purpose:</label>
+                                <span style="font-style: italic;">Classified</span>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset style="margin-top: 10px;">
+                        <legend>System Resources</legend>
+                        <label>Loading System Resources...</label>
+                        <div role="progressbar" class="progress-animated" style="margin-top: 5px;"></div>
+                    </fieldset>
+                </div>
+
+                <!-- About Tab -->
+                <div role="tabpanel" id="about-tab" style="display: none;">
+                    <h3 style="margin-top: 0;">Windows 98 Retro Experience</h3>
+                    <p>Welcome to a nostalgic trip back to 1998! This site is built with:</p>
+                    <ul>
+                        <li><strong>98.css</strong> - A design system for building faithful recreations of Windows 98 UIs</li>
+                        <li><strong>Pure HTML/CSS/JS</strong> - No frameworks, just like the good old days</li>
+                        <li><strong>Love for retro computing</strong> - Because sometimes simpler is better</li>
+                    </ul>
+                    <p style="font-size: 11px; color: #555; margin-top: 20px;">
+                        Made with ❤️ and nostalgia<br>
+                        © 2025 All rights reserved
+                    </p>
+                </div>
+
+                <div class="status-bar">
+                    <p class="status-bar-field">3 objects</p>
+                    <p class="status-bar-field">My Computer</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guestbook Window with Forms -->
+        <div class="window" id="guestbook-window" style="top: 150px; left: 150px; width: 450px;">
+            <div class="title-bar" onmousedown="startDrag(event, 'guestbook-window')">
+                <div class="title-bar-text">Guestbook - Sign In!</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Minimize" onclick="minimizeWindow('guestbook-window')"></button>
+                    <button aria-label="Maximize" onclick="maximizeWindow('guestbook-window')"></button>
+                    <button aria-label="Close" onclick="closeWindow('guestbook-window')"></button>
+                </div>
+            </div>
+            <div class="window-body">
+                <p style="margin-top: 0;">
+                    <strong>Sign the guestbook!</strong> Leave your mark on this corner of the internet.
+                </p>
+
+                <form onsubmit="submitGuestbook(event)">
+                    <fieldset>
+                        <legend>Visitor Information</legend>
+
+                        <div class="field-row-stacked">
+                            <label for="name">Name:</label>
+                            <input id="name" type="text" placeholder="Anonymous" />
+                        </div>
+
+                        <div class="field-row-stacked" style="margin-top: 10px;">
+                            <label for="email">Email (optional):</label>
+                            <input id="email" type="email" placeholder="you@example.com" />
+                        </div>
+
+                        <div class="field-row-stacked" style="margin-top: 10px;">
+                            <label for="message">Message:</label>
+                            <textarea id="message" rows="4" placeholder="Leave a message..."></textarea>
+                        </div>
+
+                        <div style="margin-top: 10px;">
+                            <p style="margin: 5px 0; font-size: 11px;">How did you find this site?</p>
+                            <input id="find-search" type="radio" name="find-method" value="search">
+                            <label for="find-search">Search Engine</label><br>
+                            <input id="find-link" type="radio" name="find-method" value="link" checked>
+                            <label for="find-link">Followed a link</label><br>
+                            <input id="find-accident" type="radio" name="find-method" value="accident">
+                            <label for="find-accident">Random accident</label>
+                        </div>
+
+                        <div style="margin-top: 10px;">
+                            <input id="subscribe" type="checkbox" />
+                            <label for="subscribe">Send me updates (just kidding, this doesn't work)</label>
+                        </div>
+                    </fieldset>
+
+                    <div class="field-row" style="justify-content: flex-end; margin-top: 15px;">
+                        <button type="submit">Sign Guestbook</button>
+                        <button type="button" onclick="document.querySelector('form').reset()">Clear</button>
+                    </div>
+
+                    <div id="guestbook-response" style="display: none; margin-top: 10px; padding: 10px; background: #ffffcc; border: 1px solid #808080;">
+                        <p style="margin: 0;">✓ Thanks for signing! Your entry has been recorded... somewhere. 📝</p>
+                    </div>
+                </form>
+
+                <div class="status-bar">
+                    <p class="status-bar-field">Ready</p>
+                    <p class="status-bar-field">Form: Active</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Links Window -->
+        <div class="window" id="links-window" style="top: 200px; left: 200px; width: 400px;">
+            <div class="title-bar" onmousedown="startDrag(event, 'links-window')">
+                <div class="title-bar-text">Cool Links</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Minimize" onclick="minimizeWindow('links-window')"></button>
+                    <button aria-label="Maximize" onclick="maximizeWindow('links-window')"></button>
+                    <button aria-label="Close" onclick="closeWindow('links-window')"></button>
+                </div>
+            </div>
+            <div class="window-body">
+                <p style="margin-top: 0;"><strong>Links I Think Are Cool:</strong></p>
+
+                <ul style="list-style-type: square;">
+                    <li><a href="https://github.com/jdan/98.css" target="_blank">98.css</a> - The CSS framework used here</li>
+                    <li><a href="https://www.cameronsworld.net/" target="_blank">Cameron's World</a> - A love letter to GeoCities</li>
+                    <li><a href="https://www.windows93.net/" target="_blank">Windows 93</a> - Fictional web OS</li>
+                    <li><a href="https://copy.sh/v86/" target="_blank">v86</a> - x86 virtualization in the browser</li>
+                    <li><a href="https://neal.fun/internet-artifacts/" target="_blank">Internet Artifacts</a> - Museum of the internet</li>
+                </ul>
+
+                <fieldset style="margin-top: 15px;">
+                    <legend>Webring</legend>
+                    <p style="font-size: 11px; text-align: center;">
+                        <a href="#">← Previous</a> |
+                        <a href="#">Random</a> |
+                        <a href="#">Next →</a>
+                    </p>
+                    <p style="font-size: 10px; text-align: center; margin: 5px 0 0 0; color: #555;">
+                        (This webring doesn't actually exist)
+                    </p>
+                </fieldset>
+
+                <div class="status-bar">
+                    <p class="status-bar-field">5 links</p>
+                    <p class="status-bar-field">Ready</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Taskbar -->
+    <div class="taskbar">
+        <button class="start-button" onclick="toggleStartMenu()">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect fill='%23ff0000' width='16' height='16'/%3E%3Cpath fill='%23fff' d='M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z'/%3E%3C/svg%3E" width="16" height="16" alt="Start">
+            Start
+        </button>
+        <div class="taskbar-items" id="taskbar-items">
+            <button class="taskbar-item" onclick="restoreWindow('about-window')">About - hidden.exe</button>
+        </div>
+        <div class="system-tray">
+            <span>🔊</span>
+            <span class="clock" id="clock"></span>
+        </div>
+    </div>
+
+    <!-- Start Menu -->
+    <div class="start-menu" id="start-menu">
+        <button class="start-menu-item" onclick="openWindow('about-window'); toggleStartMenu();">📄 About</button>
+        <button class="start-menu-item" onclick="openWindow('explorer-window'); toggleStartMenu();">💾 My Computer</button>
+        <button class="start-menu-item" onclick="openWindow('guestbook-window'); toggleStartMenu();">✏️ Guestbook</button>
+        <button class="start-menu-item" onclick="openWindow('links-window'); toggleStartMenu();">🔗 Links</button>
+        <div class="start-menu-separator"></div>
+        <button class="start-menu-item" onclick="alert('Run dialog not implemented... this is just HTML!'); toggleStartMenu();">▶️ Run...</button>
+        <button class="start-menu-item" onclick="alert('Shut Down? Where would you go?'); toggleStartMenu();">🔌 Shut Down...</button>
+    </div>
+
+    <script>
+        // Initialize domain name
+        const domainName = window.location.hostname;
+        document.getElementById('domain-name').textContent = domainName;
+        document.getElementById('domain-name-2').textContent = domainName;
+        document.getElementById('browser-info').textContent = navigator.userAgent.split(' ').slice(-2).join(' ');
+
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}`;
+        }
+        updateClock();
+        setInterval(updateClock, 60000);
+
+        // Response buttons
+        function showResponse(type) {
+            document.querySelectorAll('.response-text').forEach(el => {
+                el.classList.remove('active');
+            });
+            if (type === 'curious') {
+                document.getElementById('response-curious').classList.add('active');
+            } else if (type === 'breadcrumbs') {
+                document.getElementById('response-breadcrumbs').classList.add('active');
+            }
+        }
+
+        // Window management
+        function openWindow(windowId) {
+            const window = document.getElementById(windowId);
+            window.classList.add('active');
+            window.classList.remove('minimized');
+            bringToFront(windowId);
+            updateTaskbar();
+        }
+
+        function closeWindow(windowId) {
+            document.getElementById(windowId).classList.remove('active');
+            updateTaskbar();
+        }
+
+        function minimizeWindow(windowId) {
+            document.getElementById(windowId).classList.add('minimized');
+        }
+
+        function restoreWindow(windowId) {
+            const window = document.getElementById(windowId);
+            window.classList.remove('minimized');
+            window.classList.add('active');
+            bringToFront(windowId);
+        }
+
+        function maximizeWindow(windowId) {
+            // Simple maximize - you could make this fancier
+            alert('Maximize not implemented... but imagine this window is now full screen! 📺');
+        }
+
+        function bringToFront(windowId) {
+            document.querySelectorAll('.window').forEach(w => {
+                w.style.zIndex = w.id === windowId ? 100 : 10;
+            });
+        }
+
+        // Dragging
+        let draggedWindow = null;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        function startDrag(e, windowId) {
+            if (e.target.closest('.title-bar-controls')) return;
+            draggedWindow = document.getElementById(windowId);
+            const rect = draggedWindow.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            bringToFront(windowId);
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (draggedWindow) {
+                draggedWindow.style.left = (e.clientX - offsetX) + 'px';
+                draggedWindow.style.top = (e.clientY - offsetY) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            draggedWindow = null;
+        });
+
+        // Taskbar
+        function updateTaskbar() {
+            const taskbarItems = document.getElementById('taskbar-items');
+            taskbarItems.innerHTML = '';
+            document.querySelectorAll('.window.active:not(.minimized)').forEach(window => {
+                const title = window.querySelector('.title-bar-text').textContent;
+                const btn = document.createElement('button');
+                btn.className = 'taskbar-item';
+                btn.textContent = title;
+                btn.onclick = () => restoreWindow(window.id);
+                taskbarItems.appendChild(btn);
+            });
+        }
+
+        // Start menu
+        function toggleStartMenu() {
+            document.getElementById('start-menu').classList.toggle('active');
+        }
+
+        // Close start menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.start-button') && !e.target.closest('.start-menu')) {
+                document.getElementById('start-menu').classList.remove('active');
+            }
+        });
+
+        // Tabs
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('[role="tabpanel"]').forEach(panel => {
+                panel.style.display = 'none';
+            });
+            // Remove selected state from all tab buttons
+            document.querySelectorAll('[role="tab"]').forEach(tab => {
+                tab.setAttribute('aria-selected', 'false');
+            });
+            // Show selected tab
+            document.getElementById(tabId).style.display = 'block';
+            // Set selected state on button
+            event.target.setAttribute('aria-selected', 'true');
+        }
+
+        // Guestbook submission
+        function submitGuestbook(e) {
+            e.preventDefault();
+            const response = document.getElementById('guestbook-response');
+            response.style.display = 'block';
+            setTimeout(() => {
+                response.style.display = 'none';
+                e.target.reset();
+            }, 3000);
+        }
+
+        // Initialize
+        updateTaskbar();
+    </script>
+
+    <style>
+        .response-text {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: #c0c0c0;
+            border: 2px solid #808080;
+        }
+
+        .response-text.active {
+            display: block;
+        }
+    </style>
+</body>
+</html>
