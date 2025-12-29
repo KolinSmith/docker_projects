@@ -1,4 +1,76 @@
 services:
+  beszel:
+    image: henrygd/beszel:latest
+    container_name: beszel-hub
+    restart: unless-stopped
+    ports:
+      - "8090:8090"  # Web interface
+    environment:
+      - TZ=America/Chicago
+    volumes:
+      - ./beszel_data:/beszel_data
+      - ./beszel_socket:/beszel_socket  # Shared socket for local agent
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+      - FOWNER
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./beszel_agent_data:/var/lib/beszel-agent
+      - ./beszel_socket:/beszel_socket
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      LISTEN: /beszel_socket/beszel.sock
+      HUB_URL: http://localhost:8090
+      # TOKEN and KEY will be set after creating system in web UI
+      # Add these to .env file: BESZEL_AGENT_TOKEN and BESZEL_AGENT_KEY
+      TOKEN: ${BESZEL_AGENT_TOKEN:-changeme}
+      KEY: ${BESZEL_AGENT_KEY:-changeme}
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+      - SYS_PTRACE  # Needed to read process info
+      - NET_ADMIN   # Needed to read network stats
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+        reservations:
+          memory: 32M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
   capture:
     image: ghcr.io/bluewave-labs/capture:latest
     container_name: capture
