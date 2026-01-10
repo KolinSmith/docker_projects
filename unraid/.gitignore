@@ -1,8 +1,0 @@
-# Environment files with secrets
-.env
-
-# Beszel agent data (created at runtime)
-beszel_agent_data/
-
-# Logs
-*.log
