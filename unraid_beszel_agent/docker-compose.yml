@@ -1,10 +1,7 @@
-version: '3.8'
-
 services:
   beszel-agent:
     image: henrygd/beszel-agent:latest
-    container_name: beszel-agent-unraid
-    hostname: unraid
+    container_name: beszel-agent
     restart: unless-stopped
 
     # Use host networking for simplest setup
@@ -19,7 +16,7 @@ services:
 
     volumes:
       # Beszel agent data storage
-      - ./beszel_agent_data:/var/lib/beszel-agent
+      - /mnt/user/appdata/beszel-agent:/var/lib/beszel-agent
 
       # Docker socket (read-only) - monitor Unraid containers
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -41,18 +38,3 @@ services:
       - DAC_OVERRIDE   # File permission overrides
       - SYS_PTRACE     # Read process info
       - NET_ADMIN      # Read network stats
-
-    # Resource limits (optional - adjust as needed)
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 64M
-
-    # Logging
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
