@@ -15,11 +15,7 @@ entryPoints:
       middlewares:
         - secureHeaders@file
       tls:
-        certResolver: duckdns
-        domains:
-          - main: papermario.duckdns.org
-            sans:
-              - "*.papermario.duckdns.org"
+        certResolver: letsencrypt
 
 serversTransport:
   insecureSkipVerify: true
@@ -37,19 +33,11 @@ providers:
     filename: /configurations/dynamic.yml
 
 certificatesResolvers:
-  duckdns:
+  # TLS-ALPN Challenge - No DNS provider API needed
+  # Uses port 443 for validation (works with .app/.dev domains that require HTTPS)
+  # Just requires domain pointing to server IP and port 443 accessible
+  letsencrypt:
     acme:
       email: kolinksmith@gmail.com
       storage: acme.json
-      dnsChallenge:
-        provider: duckdns
-
-  cloudflare:
-    acme:
-      email: kolinksmith@gmail.com
-      storage: acme-cloudflare.json
-      dnsChallenge:
-        provider: cloudflare
-        resolvers:
-          - "1.1.1.1:53"
-          - "1.0.0.1:53"
+      tlsChallenge: {}  # Uses port 443 for validation
