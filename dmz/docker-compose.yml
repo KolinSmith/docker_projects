@@ -23,25 +23,18 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/ubuntu/docker-data/traefik/data/traefik.yml:/traefik.yml:ro
-      - /home/ubuntu/docker-data/traefik/data/acme.json:/acme.json
-      - /home/ubuntu/docker-data/traefik/data/acme.json:/acme-cloudflare.json
-      - /home/ubuntu/docker-data/traefik/data/configurations:/configurations
+      - /home/ubuntu/docker-data/traefik/traefik.yml:/traefik.yml:ro
+      - /home/ubuntu/docker-data/traefik/acme.json:/acme.json
+      - /home/ubuntu/docker-data/traefik/configurations:/configurations
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      # Route for duckdns domain
+      # Route for primary domain (HTTP challenge)
       - "traefik.http.routers.traefik-secure.entrypoints=websecure"
-      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${DUCKDNS_DOMAIN}`)"
-      - "traefik.http.routers.traefik-secure.tls.certresolver=duckdns"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${SEARCH_DOMAIN}`)"
+      - "traefik.http.routers.traefik-secure.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik-secure.service=api@internal"
       - "traefik.http.routers.traefik-secure.middlewares=user-auth@file"
-      # Route for search domain
-      - "traefik.http.routers.traefik-searchdomain.entrypoints=websecure"
-      - "traefik.http.routers.traefik-searchdomain.rule=Host(`traefik.${SEARCH_DOMAIN}`)"
-      - "traefik.http.routers.traefik-searchdomain.tls.certresolver=cloudflare"
-      - "traefik.http.routers.traefik-searchdomain.service=api@internal"
-      - "traefik.http.routers.traefik-searchdomain.middlewares=user-auth@file"
     # healthcheck:
     #   test: ["CMD", "traefik", "healthcheck", "--ping"]
     #   interval: 10s
@@ -86,12 +79,12 @@ services:
   #     # Route for duckdns domain
   #     - "traefik.http.routers.portainer-secure.entrypoints=websecure"
   #     - "traefik.http.routers.portainer-secure.rule=Host(`portainer.${DUCKDNS_DOMAIN}`)"
-  #     - "traefik.http.routers.portainer-secure.tls.certresolver=duckdns"
+  #     - "traefik.http.routers.portainer-secure.tls.certresolver=letsencrypt"
   #     - "traefik.http.routers.portainer-secure.service=portainer-service"
   #     # Route for search domain
   #     - "traefik.http.routers.portainer-searchdomain.entrypoints=websecure"
   #     - "traefik.http.routers.portainer-searchdomain.rule=Host(`portainer.${SEARCH_DOMAIN}`)"
-  #     - "traefik.http.routers.portainer-searchdomain.tls.certresolver=cloudflare"
+  #     - "traefik.http.routers.portainer-searchdomain.tls.certresolver=letsencrypt"
   #     - "traefik.http.routers.portainer-searchdomain.service=portainer-service"
   #     # Service definition
   #     - "traefik.http.services.portainer-service.loadbalancer.server.port=9000"
@@ -139,12 +132,12 @@ services:
       # # Route for duckdns domain (uses duckdns cert)
       # - "traefik.http.routers.headscale-secure.entrypoints=websecure"
       # - "traefik.http.routers.headscale-secure.rule=Host(`headscale.${DUCKDNS_DOMAIN}`)"
-      # - "traefik.http.routers.headscale-testdomain.tls.certresolver=duckdns"
+      # - "traefik.http.routers.headscale-testdomain.tls.certresolver=letsencrypt"
       # - "traefik.http.routers.headscale-secure.service=headscale-service"
       # # Route for test.com domain (uses cloudflare cert)
       # - "traefik.http.routers.headscale-testdomain.entrypoints=websecure"
       # - "traefik.http.routers.headscale-testdomain.rule=Host(`headscale.${SEARCH_DOMAIN}`)"
-      # - "traefik.http.routers.headscale-testdomain.tls.certresolver=cloudflare"
+      # - "traefik.http.routers.headscale-testdomain.tls.certresolver=letsencrypt"
       # - "traefik.http.routers.headscale-testdomain.service=headscale-service"
       # # Service definition
       # - "traefik.http.services.headscale-service.loadbalancer.server.port=8080"
@@ -188,12 +181,12 @@ services:
       # # Route for duckdns domain (uses duckdns cert)
       # - "traefik.http.routers.healthchecks-secure.entrypoints=websecure"
       # - "traefik.http.routers.healthchecks-secure.rule=Host(`healthchecks.${DUCKDNS_DOMAIN}`)"
-      # - "traefik.http.routers.healthchecks-testdomain.tls.certresolver=duckdns"
+      # - "traefik.http.routers.healthchecks-testdomain.tls.certresolver=letsencrypt"
       # - "traefik.http.routers.healthchecks-secure.service=healthchecks-service"
       # # Route for test.com domain (uses cloudflare cert)
       # - "traefik.http.routers.healthchecks-testdomain.entrypoints=websecure"
       # - "traefik.http.routers.healthchecks-testdomain.rule=Host(`healthchecks.${SEARCH_DOMAIN}`)"
-      # - "traefik.http.routers.healthchecks-testdomain.tls.certresolver=cloudflare"
+      # - "traefik.http.routers.healthchecks-testdomain.tls.certresolver=letsencrypt"
       # - "traefik.http.routers.healthchecks-testdomain.service=healthchecks-service"
       # # Service definition
       # - "traefik.http.services.healthchecks-service.loadbalancer.server.port=8080"
@@ -257,12 +250,12 @@ services:
   #     # Route for duckdns domain
   #     # - "traefik.http.routers.gitea-secure.entrypoints=websecure"
   #     # - "traefik.http.routers.gitea-secure.rule=Host(`gitea.${DUCKDNS_DOMAIN}`)"
-  #     # - "traefik.http.routers.gitea-secure.tls.certresolver=duckdns"
+  #     # - "traefik.http.routers.gitea-secure.tls.certresolver=letsencrypt"
   #     # - "traefik.http.routers.gitea-secure.service=gitea-service"
   #     # Route for search domain
   #     - "traefik.http.routers.gitea-searchdomain.entrypoints=websecure"
   #     - "traefik.http.routers.gitea-searchdomain.rule=Host(`gitea.${SEARCH_DOMAIN}`)"
-  #     - "traefik.http.routers.gitea-searchdomain.tls.certresolver=cloudflare"
+  #     - "traefik.http.routers.gitea-searchdomain.tls.certresolver=letsencrypt"
   #     - "traefik.http.routers.gitea-searchdomain.service=gitea-service"
   #     # Service definition
   #     - "traefik.http.services.gitea-service.loadbalancer.server.port=3000"
@@ -363,12 +356,12 @@ services:
       # Route for duckdns domain
       # - "traefik.http.routers.forgejo-secure.entrypoints=websecure"
       # - "traefik.http.routers.forgejo-secure.rule=Host(`git.${DUCKDNS_DOMAIN}`)"
-      # - "traefik.http.routers.forgejo-secure.tls.certresolver=duckdns"
+      # - "traefik.http.routers.forgejo-secure.tls.certresolver=letsencrypt"
       # - "traefik.http.routers.forgejo-secure.service=forgejo-service"
       # Route for search domain
       - "traefik.http.routers.forgejo-searchdomain.entrypoints=websecure"
       - "traefik.http.routers.forgejo-searchdomain.rule=Host(`git.${SEARCH_DOMAIN}`)"
-      - "traefik.http.routers.forgejo-searchdomain.tls.certresolver=cloudflare"
+      - "traefik.http.routers.forgejo-searchdomain.tls.certresolver=letsencrypt"
       - "traefik.http.routers.forgejo-searchdomain.service=forgejo-service"
       # Service definition
       - "traefik.http.services.forgejo-service.loadbalancer.server.port=3000"
@@ -476,12 +469,12 @@ services:
     #   # Route for duckdns domain
     #   - "traefik.http.routers.gitea-mirror-secure.entrypoints=websecure"
     #   - "traefik.http.routers.gitea-mirror-secure.rule=Host(`gitea-mirror.${DUCKDNS_DOMAIN}`)"
-    #   - "traefik.http.routers.gitea-mirror-secure.tls.certresolver=duckdns"
+    #   - "traefik.http.routers.gitea-mirror-secure.tls.certresolver=letsencrypt"
     #   - "traefik.http.routers.gitea-mirror-secure.service=gitea-mirror-service"
     #   # Route for search domain
     #   - "traefik.http.routers.gitea-mirror-searchdomain.entrypoints=websecure"
     #   - "traefik.http.routers.gitea-mirror-searchdomain.rule=Host(`gitea-mirror.${SEARCH_DOMAIN}`)"
-    #   - "traefik.http.routers.gitea-mirror-searchdomain.tls.certresolver=cloudflare"
+    #   - "traefik.http.routers.gitea-mirror-searchdomain.tls.certresolver=letsencrypt"
     #   - "traefik.http.routers.gitea-mirror-searchdomain.service=gitea-mirror-service"
     #   # Service definition
     #   - "traefik.http.services.gitea-mirror-service.loadbalancer.server.port=4321"
@@ -524,12 +517,12 @@ services:
       # Route for duckdns domain
       # - "traefik.http.routers.uptime-kuma-secure.entrypoints=websecure"
       # - "traefik.http.routers.uptime-kuma-secure.rule=Host(`uptime.${DUCKDNS_DOMAIN}`)"
-      # - "traefik.http.routers.uptime-kuma-secure.tls.certresolver=duckdns"
+      # - "traefik.http.routers.uptime-kuma-secure.tls.certresolver=letsencrypt"
       # - "traefik.http.routers.uptime-kuma-secure.service=uptime-kuma-service"
       # Route for search domain
       - "traefik.http.routers.uptime-kuma-searchdomain.entrypoints=websecure"
       - "traefik.http.routers.uptime-kuma-searchdomain.rule=Host(`uptime.${SEARCH_DOMAIN}`)"
-      - "traefik.http.routers.uptime-kuma-searchdomain.tls.certresolver=cloudflare"
+      - "traefik.http.routers.uptime-kuma-searchdomain.tls.certresolver=letsencrypt"
       - "traefik.http.routers.uptime-kuma-searchdomain.service=uptime-kuma-service"
       # Service definition
       - "traefik.http.services.uptime-kuma-service.loadbalancer.server.port=3001"
@@ -581,12 +574,12 @@ services:
       # Route for duckdns domain (uses duckdns cert)
       # - "traefik.http.routers.searxng-secure.entrypoints=websecure"
       # - "traefik.http.routers.searxng-secure.rule=Host(`search.${DUCKDNS_DOMAIN}`)"
-      # - "traefik.http.routers.searxng-testdomain.tls.certresolver=duckdns"
+      # - "traefik.http.routers.searxng-testdomain.tls.certresolver=letsencrypt"
       # - "traefik.http.routers.searxng-secure.service=searxng-service"
       # Route for test.com domain (uses cloudflare cert)
       - "traefik.http.routers.searxng-searchdomain.entrypoints=websecure"
       - "traefik.http.routers.searxng-searchdomain.rule=Host(`search.${SEARCH_DOMAIN}`)"
-      - "traefik.http.routers.searxng-searchdomain.tls.certresolver=cloudflare"
+      - "traefik.http.routers.searxng-searchdomain.tls.certresolver=letsencrypt"
       - "traefik.http.routers.searxng-searchdomain.service=searxng-service"
       # Service definition
       - "traefik.http.services.searxng-service.loadbalancer.server.port=8080"
@@ -668,7 +661,7 @@ services:
   #       # Route for search domain
   #       - "traefik.http.routers.capture-searchdomain.entrypoints=websecure"
   #       - "traefik.http.routers.capture-searchdomain.rule=Host(`capture.${SEARCH_DOMAIN}`)"
-  #       - "traefik.http.routers.capture-searchdomain.tls.certresolver=cloudflare"
+  #       - "traefik.http.routers.capture-searchdomain.tls.certresolver=letsencrypt"
   #       - "traefik.http.routers.capture-searchdomain.service=capture-service"
   #       # Service definition
   #       - "traefik.http.services.capture-service.loadbalancer.server.port=59232"
@@ -716,7 +709,7 @@ services:
       # Route for search domain
       - "traefik.http.routers.bentopdf-homedomain.entrypoints=websecure"
       - "traefik.http.routers.bentopdf-homedomain.rule=Host(`pdf.${SEARCH_DOMAIN}`)"
-      - "traefik.http.routers.bentopdf-homedomain.tls.certresolver=cloudflare"
+      - "traefik.http.routers.bentopdf-homedomain.tls.certresolver=letsencrypt"
       - "traefik.http.routers.bentopdf-homedomain.service=bentopdf-service"
       # Service definition
       - "traefik.http.services.bentopdf-service.loadbalancer.server.port=8080"
