@@ -1,6 +1,6 @@
 api:
-  dashboard: true
-  debug: true
+  dashboard: false
+  debug: false
 
 entryPoints:
   web:
@@ -25,7 +25,7 @@ serversTransport:
   insecureSkipVerify: true
 
 log:
-  level: DEBUG
+  level: WARN
 
 providers:
   docker:
