@@ -1,7 +1,6 @@
 # Tor Relay Configuration
-# Example configuration - customize before deploying!
-# Default: Middle relay / Guard node (no exit traffic)
-# See https://github.com/KolinSmith/tor-relay-docker for exit relay configuration
+# Middle relay / Guard node (no exit traffic)
+# Nickname and ContactInfo are set via environment variables in .env
 
 # Disable SOCKS proxy (relay only, no local connections)
 SOCKSPort 0
@@ -27,7 +26,8 @@ CookieAuthentication 1
 ORPort 8443
 DirPort 8444
 
-# Relay identity (REQUIRED: Change these before deploying!)
+# Relay identity - Set via TOR_NICKNAME and TOR_CONTACT_INFO env vars
+# These placeholder values are overridden by environment variables
 Nickname YourRelayNickname
 ContactInfo your-email@example.com
 
@@ -37,7 +37,6 @@ RelayBandwidthRate 1000 KBytes
 RelayBandwidthBurst 1500 KBytes
 
 # Exit policy: Middle relay / Guard node (no exit traffic)
-# For exit relay configuration, see https://github.com/KolinSmith/tor-relay-docker README
 ExitPolicy reject *:*
 
 # Uncomment if running multiple relays (add fingerprints)
