@@ -3,6 +3,9 @@ services:
     image: henrygd/beszel-agent:latest
     container_name: beszel-agent
     restart: unless-stopped
+    user: "0:0"  # Must run as root for system monitoring
+    tty: false
+    stdin_open: false
     network_mode: host
     environment:
       PORT: 45876
@@ -22,10 +25,13 @@ services:
       - DAC_OVERRIDE
       - SYS_PTRACE
       - NET_ADMIN
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=128m
     deploy:
       resources:
         limits:
           memory: 128M
+          pids: 128
         reservations:
           memory: 64M
     logging:
@@ -38,6 +44,9 @@ services:
     image: ghcr.io/kolinsmith/tor-relay-docker:latest
     container_name: tor-relay
     restart: unless-stopped
+    user: "108:113"  # debian-tor user (from tor-relay-docker image)
+    tty: false
+    stdin_open: false
     ports:
       - "${TOR_OR_PORT:-8443}:8443"   # ORPort
       - "${TOR_DIR_PORT:-8444}:8444"  # DirPort
@@ -51,12 +60,15 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=256m
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 4G
+          pids: 512
         reservations:
-          memory: 512M
+          memory: 2G
     logging:
       driver: "json-file"
       options:
