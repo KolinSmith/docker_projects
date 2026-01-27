@@ -7,8 +7,8 @@ services:
     tty: false
     stdin_open: false
     environment:
-      # Forgejo instance URL
-      FORGEJO_INSTANCE_URL: https://git.hiddenba.se
+      # Forgejo instance URL (from vault)
+      FORGEJO_INSTANCE_URL: "${FORGEJO_INSTANCE_URL}"
       # Runner registration token (from Forgejo web UI: Site Admin → Actions → Runners)
       FORGEJO_RUNNER_REGISTRATION_TOKEN: "${FORGEJO_RUNNER_TOKEN}"
       # Runner name

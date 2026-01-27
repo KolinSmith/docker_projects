@@ -4,7 +4,7 @@ This directory contains the Docker Compose configuration for a dedicated Forgejo
 
 ## Overview
 
-**Purpose:** CI/CD automation runner for Forgejo instance at https://git.hiddenba.se
+**Purpose:** CI/CD automation runner for Forgejo instance
 
 **Hardware:** Orange Pi R1 Plus
 - CPU: RK3328 (Quad-core ARM Cortex-A53 @ 1.5GHz)
@@ -27,7 +27,7 @@ This directory contains the Docker Compose configuration for a dedicated Forgejo
 ### Prerequisites
 
 1. **Forgejo Registration Token**
-   - Access Forgejo web UI: https://git.hiddenba.se
+   - Access your Forgejo web UI
    - Navigate to: Site Administration → Actions → Runners
    - Click "Create new Runner"
    - Copy the registration token
@@ -230,11 +230,8 @@ docker compose ps
 # Check logs for errors
 docker compose logs forgejo-runner
 
-# Verify network connectivity
-curl -I https://git.hiddenba.se
-
-# Test direct IP access (bypass Cloudflare if needed)
-ping 129.146.141.62
+# Verify network connectivity to Forgejo instance
+curl -I $FORGEJO_INSTANCE_URL
 ```
 
 ### Jobs Not Running
