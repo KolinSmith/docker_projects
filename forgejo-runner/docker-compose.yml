@@ -1,0 +1,57 @@
+services:
+  forgejo-runner:
+    image: code.forgejo.org/forgejo/runner:latest
+    container_name: forgejo-runner
+    restart: unless-stopped
+    user: "1000:1000"  # Runner user (match host user)
+    tty: false
+    stdin_open: false
+    environment:
+      # Forgejo instance URL (from vault)
+      FORGEJO_INSTANCE_URL: "${FORGEJO_INSTANCE_URL}"
+      # Runner registration token (from Forgejo web UI: Site Admin → Actions → Runners)
+      FORGEJO_RUNNER_REGISTRATION_TOKEN: "${FORGEJO_RUNNER_TOKEN}"
+      # Runner name
+      FORGEJO_RUNNER_NAME: orange-pi-r1-plus
+      # Runner labels (defines what jobs this runner can handle)
+      # Labels: arm64 (architecture), docker (can run containers), linux (OS), ansible (can run playbooks)
+      FORGEJO_RUNNER_LABELS: arm64,docker,linux,ansible
+    volumes:
+      - runner_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - runner_config:/etc/forgejo-runner
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - DAC_OVERRIDE  # Required for Docker socket access
+      - CHOWN
+      - SETGID
+      - SETUID
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          pids: 256
+        reservations:
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - runner_network
+
+networks:
+  runner_network:
+    driver: bridge
+
+volumes:
+  runner_data:
+    driver: local
+  runner_config:
+    driver: local
