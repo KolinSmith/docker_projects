@@ -23,8 +23,8 @@ CookieAuthentication 1
 ############### Relay Configuration ###############
 
 # Relay ports
-ORPort 8443
-DirPort 8444
+ORPort 8443 IPv4Only
+DirPort 8444 IPv4Only
 
 # Relay identity - Set via TOR_NICKNAME and TOR_CONTACT_INFO env vars
 # These placeholder values are overridden by environment variables
