@@ -1,7 +1,48 @@
 services:
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    user: "0:0"  # Must run as root for system monitoring
+    tty: false
+    stdin_open: false
+    network_mode: host
+    environment:
+      PORT: 45876
+      KEY: "${BESZEL_AGENT_KEY}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/host:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+      - SYS_PTRACE
+      - NET_ADMIN
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=128m
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          pids: 128
+        reservations:
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
   forgejo-runner:
     image: code.forgejo.org/forgejo/runner:12.6.3
     container_name: forgejo-runner
+    command: daemon
     restart: unless-stopped
     user: "1000:1000"  # Runner user (match host user)
     tty: false
