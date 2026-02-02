@@ -44,7 +44,7 @@ services:
     container_name: forgejo-runner
     command: /bin/forgejo-runner daemon
     restart: unless-stopped
-    user: "1000:1000"  # Runner user (match host user)
+    user: "1000:999"  # UID matches image default (owns /data), GID 999 = docker group for socket access
     tty: false
     stdin_open: false
     environment:
