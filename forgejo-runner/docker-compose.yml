@@ -42,7 +42,7 @@ services:
   forgejo-runner:
     image: code.forgejo.org/forgejo/runner:12.6.3
     container_name: forgejo-runner
-    command: daemon
+    command: /bin/forgejo-runner daemon
     restart: unless-stopped
     user: "1000:1000"  # Runner user (match host user)
     tty: false
