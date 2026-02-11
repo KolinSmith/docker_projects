@@ -32,9 +32,16 @@ Nickname YourRelayNickname
 ContactInfo your-email@example.com
 
 # Bandwidth limits
-# 1000 KB/s = ~1 MB/s sustained, 1500 KB/s = ~1.5 MB/s bursts
-RelayBandwidthRate 1000 KBytes
-RelayBandwidthBurst 1500 KBytes
+# 3000 KB/s = ~3 MB/s sustained, 4000 KB/s = ~4 MB/s bursts
+# Tested stable on Orange Pi 3B (ARM CPU: 14-27% CPU at 3 MB/s)
+RelayBandwidthRate 3000 KBytes
+RelayBandwidthBurst 4000 KBytes
+
+# Limit advertised bandwidth to prevent CPU overload (Orange Pi 3B ARM CPU)
+# Circuit creation is CPU-intensive; MaxAdvertised prevents request overload
+# Without this: 5 MB/s caused 55% CPU and tens of thousands of warnings
+# With 3 MB/s: CPU stays at 14-27% with zero circuit creation warnings
+MaxAdvertisedBandwidth 3000 KBytes
 
 # Exit policy: Middle relay / Guard node (no exit traffic)
 ExitPolicy reject *:*
