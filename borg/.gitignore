@@ -1,8 +1,5 @@
-# Environment files with secrets
-.env
+# Ignore all .env files (keep .env.example files)
+**/.env
 
-# Beszel agent data (created at runtime)
+# Ignore generated data directories
 beszel_agent_data/
-
-# Logs
-*.log
