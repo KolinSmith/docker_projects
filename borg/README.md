@@ -101,12 +101,12 @@ docker-compose up -d
 
 1. **Check container status:**
    ```bash
-   docker ps | grep beszel-agent-unraid
+   docker ps | grep beszel-agent
    ```
 
 2. **Check logs:**
    ```bash
-   docker logs beszel-agent-unraid
+   docker logs beszel-agent
    ```
 
 3. **Verify in Beszel Hub:**
@@ -172,7 +172,7 @@ Beszel agent is very lightweight and typically uses <50MB RAM.
 **Check container status:**
 ```bash
 docker ps | grep beszel
-docker logs beszel-agent-unraid
+docker logs beszel-agent
 ```
 
 **Verify port accessibility:**
@@ -207,7 +207,7 @@ nc -zv <unraid-ip> 45876
 ls -la /var/run/docker.sock
 
 # Verify agent has necessary capabilities
-docker inspect beszel-agent-unraid | grep -A 20 CapAdd
+docker inspect beszel-agent | grep -A 20 CapAdd
 ```
 
 ## Updating
