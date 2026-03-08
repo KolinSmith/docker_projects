@@ -94,19 +94,19 @@ nano .env  # Add your BESZEL_AGENT_KEY
 **Via SSH:**
 ```bash
 cd /boot/config/plugins/compose.manager/projects/beszel-agent
-docker-compose up -d
+docker compose up -d
 ```
 
 #### 6. Verify Connection
 
 1. **Check container status:**
    ```bash
-   docker ps | grep beszel-agent-unraid
+   docker ps | grep beszel-agent
    ```
 
 2. **Check logs:**
    ```bash
-   docker logs beszel-agent-unraid
+   docker logs beszel-agent
    ```
 
 3. **Verify in Beszel Hub:**
@@ -172,7 +172,7 @@ Beszel agent is very lightweight and typically uses <50MB RAM.
 **Check container status:**
 ```bash
 docker ps | grep beszel
-docker logs beszel-agent-unraid
+docker logs -f beszel-agent
 ```
 
 **Verify port accessibility:**
@@ -181,7 +181,7 @@ docker logs beszel-agent-unraid
 ss -tlnp | grep 45876
 
 # From Beszel hub (Voyager)
-nc -zv <unraid-ip> 45876
+nc -zv borg 45876
 ```
 
 **Check firewall:**
@@ -196,7 +196,7 @@ nc -zv <unraid-ip> 45876
 3. Update `.env` file with new key
 4. Restart container:
    ```bash
-   docker-compose restart beszel-agent
+   docker compose restart beszel-agent
    ```
 
 ### Permission Errors
@@ -207,7 +207,7 @@ nc -zv <unraid-ip> 45876
 ls -la /var/run/docker.sock
 
 # Verify agent has necessary capabilities
-docker inspect beszel-agent-unraid | grep -A 20 CapAdd
+docker inspect beszel-agent | grep -A 20 CapAdd
 ```
 
 ## Updating
@@ -220,8 +220,8 @@ docker inspect beszel-agent-unraid | grep -A 20 CapAdd
 ### Via SSH
 ```bash
 cd /boot/config/plugins/compose.manager/projects/beszel-agent
-docker-compose pull
-docker-compose up -d
+docker compose pull
+docker compose up -d
 ```
 
 ## Uninstalling
@@ -235,7 +235,7 @@ docker-compose up -d
 ### Via SSH
 ```bash
 cd /boot/config/plugins/compose.manager/projects/beszel-agent
-docker-compose down
+docker compose down
 # Optionally remove data
 rm -rf beszel_agent_data
 ```
