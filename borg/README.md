@@ -1,10 +1,40 @@
-# Beszel Agent for Unraid
+# Borg (Unraid) Docker Stack
+
+Unified Docker Compose stack for Borg (Unraid server) including monitoring and document management.
+
+## Services
+
+| Service | Description | Port |
+|---------|-------------|------|
+| **Monitoring** | | |
+| `beszel-agent` | System and Docker monitoring agent | 45876 |
+| **Document Management** | | |
+| `paperless-ngx` | Document management with OCR | 8000 |
+| `paperless-postgres` | PostgreSQL database | - |
+| `paperless-redis` | Redis cache/queue | - |
+| `paperless-gotenberg` | Document conversion | - |
+| `paperless-tika` | Text extraction | - |
+| **AI Services (GPU-accelerated)** | | |
+| `paperless-ollama` | Local LLM inference | 11434 |
+| `paperless-open-webui` | Ollama model management | 3001 |
+| `paperless-ai` | Auto metadata suggestions | 3000 |
+| `paperless-gpt` | Vision OCR enhancement | 3002 |
+
+## Hardware
+
+**NVIDIA GPU:** GPU-a0c637a6-a078-71e5-ffba-72dd70ee8933
+- Used for Ollama LLM inference and vision models
+- Enables fast OCR and metadata generation
+
+---
+
+# Beszel Agent
 
 Monitor your Unraid server with Beszel - resource monitoring and Docker container tracking.
 
 ## Overview
 
-This stack deploys the Beszel agent on Unraid to monitor:
+The Beszel agent monitors:
 - CPU, RAM, disk usage
 - Network statistics
 - All Docker containers running on Unraid
@@ -287,3 +317,95 @@ rm -rf beszel_agent_data
 - [Beszel Documentation](https://github.com/henrygd/beszel)
 - [Docker Compose Manager Plugin](https://forums.unraid.net/topic/114415-plugin-docker-compose-manager/)
 - [Unraid Docker Documentation](https://docs.unraid.net/unraid-os/manual/docker-management/)
+
+---
+
+# Paperless-ngx Document Management
+
+AI-powered document management with OCR, tagging, and full-text search.
+
+## Quick Start
+
+### 1. Pre-create directories
+```bash
+mkdir -p /mnt/disks/appdataAndDocker/appdata/paperless-ngx/{data,media,export,postgres,redis,ollama,open-webui,paperless-ai,paperless-gpt/prompts}
+mkdir -p /mnt/user/Documents/consume
+```
+
+### 2. Configure environment
+```bash
+cd /boot/config/plugins/compose.manager/projects/borg
+cp .env.example .env
+nano .env
+```
+
+Set these required variables:
+- `PAPERLESS_DBPASS` - Secure database password
+- `PAPERLESS_SECRET_KEY` - Generate with: `openssl rand -base64 32`
+- `PAPERLESS_API_TOKEN` - Generate after first login (Profile → API Tokens)
+
+### 3. Deploy
+```bash
+docker compose up -d
+```
+
+### 4. Access Paperless
+- URL: http://borg:8000
+- Create admin account on first visit
+- Generate API token: Profile → API Tokens (paste into `.env`)
+
+### 5. Pull AI models (via Open WebUI)
+- Access: http://borg:3001
+- Pull models: `llama3.2:3b` and `minicpm-v:8b`
+
+## Features
+
+**Core:**
+- OCR with multiple language support
+- Full-text search across all documents
+- Automatic tagging and organization
+- Email import support
+
+**AI-Enhanced (GPU-accelerated):**
+- Automatic metadata suggestions (Paperless-AI)
+- Vision-based OCR for difficult scans (Paperless-GPT)
+- Local LLM inference (Ollama with NVIDIA GPU)
+
+## Usage
+
+**Drop documents to consume:**
+```bash
+cp /path/to/document.pdf /mnt/user/Documents/consume/
+```
+
+Paperless automatically:
+1. Imports the document
+2. Performs OCR
+3. Generates metadata (if AI enabled)
+4. Makes it searchable
+
+## GPU Configuration
+
+Ollama uses NVIDIA GPU: `GPU-a0c637a6-a078-71e5-ffba-72dd70ee8933`
+
+To verify GPU is being used:
+```bash
+docker exec paperless-ollama nvidia-smi
+```
+
+## Troubleshooting
+
+**AI services not working:**
+1. Ensure API token is set in `.env`
+2. Verify models are pulled in Open WebUI
+3. Check Ollama logs: `docker logs paperless-ollama`
+
+**OCR not working:**
+1. Check Tika/Gotenberg logs
+2. Verify PAPERLESS_TIKA_ENABLED=1
+
+## References
+
+- [Paperless-ngx Documentation](https://docs.paperless-ngx.com/)
+- [TechnoTim's Guide](https://technotim.com/posts/paperless-ngx-local-ai/)
+- [timothystewart6/paperless-stack](https://github.com/timothystewart6/paperless-stack)

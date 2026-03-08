@@ -38,3 +38,137 @@ services:
       - DAC_OVERRIDE   # File permission overrides
       - SYS_PTRACE     # Read process info
       - NET_ADMIN      # Read network stats
+
+  # Paperless-ngx - Document management system
+  paperless-ngx:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    container_name: paperless-ngx
+    restart: unless-stopped
+    depends_on:
+      - paperless-postgres
+      - paperless-redis
+      - paperless-gotenberg
+      - paperless-tika
+    ports:
+      - "8000:8000"
+    environment:
+      PAPERLESS_REDIS: redis://paperless-redis:6379
+      PAPERLESS_DBHOST: paperless-postgres
+      PAPERLESS_DBNAME: ${PAPERLESS_DBNAME}
+      PAPERLESS_DBUSER: ${PAPERLESS_DBUSER}
+      PAPERLESS_DBPASS: ${PAPERLESS_DBPASS}
+      PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET_KEY}
+      PAPERLESS_URL: ${PAPERLESS_URL:-http://borg:8000}
+      PAPERLESS_TIME_ZONE: ${TZ:-America/New_York}
+      PAPERLESS_OCR_LANGUAGE: ${PAPERLESS_OCR_LANGUAGE:-eng}
+      PAPERLESS_TIKA_ENABLED: 1
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://paperless-gotenberg:3000
+      PAPERLESS_TIKA_ENDPOINT: http://paperless-tika:9998
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/data:/usr/src/paperless/data
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/media:/usr/src/paperless/media
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/export:/usr/src/paperless/export
+      - ${PAPERLESS_CONSUME_DIR:-/mnt/user/Documents/consume}:/usr/src/paperless/consume
+
+  # PostgreSQL database for paperless-ngx
+  paperless-postgres:
+    image: postgres:16
+    container_name: paperless-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${PAPERLESS_DBNAME}
+      POSTGRES_USER: ${PAPERLESS_DBUSER}
+      POSTGRES_PASSWORD: ${PAPERLESS_DBPASS}
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/postgres:/var/lib/postgresql/data
+
+  # Redis cache for paperless-ngx
+  paperless-redis:
+    image: docker.io/library/redis:7
+    container_name: paperless-redis
+    restart: unless-stopped
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/redis:/data
+
+  # Gotenberg - Document conversion service
+  paperless-gotenberg:
+    image: docker.io/gotenberg/gotenberg:8
+    container_name: paperless-gotenberg
+    restart: unless-stopped
+    command:
+      - "gotenberg"
+      - "--chromium-disable-javascript=true"
+      - "--chromium-allow-list=file:///tmp/.*"
+
+  # Tika - Text extraction service
+  paperless-tika:
+    image: docker.io/apache/tika:latest
+    container_name: paperless-tika
+    restart: unless-stopped
+
+  # Ollama - Local LLM inference with GPU support
+  paperless-ollama:
+    image: ollama/ollama:latest
+    container_name: paperless-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['GPU-a0c637a6-a078-71e5-ffba-72dd70ee8933']
+              capabilities: [gpu]
+
+  # Open WebUI - Manage Ollama models
+  paperless-open-webui:
+    image: ghcr.io/open-webui/open-webui:latest
+    container_name: paperless-open-webui
+    restart: unless-stopped
+    depends_on:
+      - paperless-ollama
+    ports:
+      - "3001:8080"
+    environment:
+      OLLAMA_BASE_URL: http://paperless-ollama:11434
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/open-webui:/app/backend/data
+
+  # Paperless-AI - Automatic metadata suggestions
+  paperless-ai:
+    image: clusterzx/paperless-ai:latest
+    container_name: paperless-ai
+    restart: unless-stopped
+    depends_on:
+      - paperless-ngx
+      - paperless-ollama
+    ports:
+      - "3000:3000"
+    environment:
+      PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN}
+      PAPERLESS_BASE_URL: http://paperless-ngx:8000
+      OLLAMA_HOST: http://paperless-ollama:11434
+      OLLAMA_MODEL: ${PAPERLESS_AI_MODEL:-llama3.2:3b}
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless-ai:/app/data
+
+  # Paperless-GPT - Vision OCR and metadata
+  paperless-gpt:
+    image: icereed/paperless-gpt:latest
+    container_name: paperless-gpt
+    restart: unless-stopped
+    depends_on:
+      - paperless-ngx
+      - paperless-ollama
+    ports:
+      - "3002:8080"
+    environment:
+      PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN}
+      PAPERLESS_BASE_URL: http://paperless-ngx:8000
+      OLLAMA_HOST: http://paperless-ollama:11434
+      VISION_MODEL: ${PAPERLESS_GPT_VISION_MODEL:-minicpm-v:8b}
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless-gpt/prompts:/app/prompts
