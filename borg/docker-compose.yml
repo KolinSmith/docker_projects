@@ -55,9 +55,9 @@ services:
       - "8000:8000"
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/data:/usr/src/paperless/data
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/media:/usr/src/paperless/media
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/export:/usr/src/paperless/export
-      - /mnt/user/Documents/consume:/usr/src/paperless/consume
+      - /mnt/user/paperless/media:/usr/src/paperless/media
+      - /mnt/user/paperless/export:/usr/src/paperless/export
+      - /mnt/user/paperless/consume:/usr/src/paperless/consume
 
   # postgres database for paperless-ngx
   paperless-postgres:

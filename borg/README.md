@@ -330,8 +330,8 @@ AI-powered document management with OCR, tagging, and full-text search.
 
 ### 1. Pre-create directories
 ```bash
-mkdir -p /mnt/disks/appdataAndDocker/appdata/paperless-ngx/{data,media,export,postgres,redis,ollama,open-webui,paperless-ai,paperless-gpt/prompts}
-mkdir -p /mnt/user/Documents/consume
+mkdir -p /mnt/disks/appdataAndDocker/appdata/paperless-ngx/{data,postgres,redis,ollama,open-webui,paperless-ai,paperless-gpt/prompts}
+# media/export/consume already exist from previous install at /mnt/user/paperless/
 ```
 
 ### 2. Configure environment
