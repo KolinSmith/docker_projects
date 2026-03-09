@@ -3,6 +3,8 @@ services:
     image: henrygd/beszel-agent:latest
     container_name: beszel-agent-unraid
     restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://github.com/henrygd/beszel/raw/main/supplemental/logo/logo.png"
 
     # Use host networking for simplest setup
     network_mode: host
@@ -44,6 +46,8 @@ services:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
     container_name: paperless-ngx
     restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://github.com/paperless-ngx/paperless-ngx/raw/main/resources/logo/web/png/square.default.png"
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless.env
     depends_on:
@@ -64,6 +68,8 @@ services:
     image: postgres:16
     restart: unless-stopped
     container_name: paperless-postgres
+    labels:
+      net.unraid.docker.icon: "https://github.com/docker-library/docs/raw/master/postgres/logo.png"
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/postgres.env
     volumes:
@@ -74,6 +80,8 @@ services:
     image: docker.io/library/redis:7
     container_name: paperless-redis
     restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/nicholaswilde/helm-charts/main/charts/redis/icon.png"
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/redis.env
     volumes:
@@ -83,6 +91,8 @@ services:
   paperless-gotenberg:
     image: docker.io/gotenberg/gotenberg:8
     container_name: paperless-gotenberg
+    labels:
+      net.unraid.docker.icon: "https://gotenberg.dev/img/logo.png"
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/gotenberg.env
     restart: unless-stopped
@@ -96,6 +106,8 @@ services:
     image: docker.io/apache/tika:latest
     container_name: paperless-tika
     restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://tika.apache.org/tika.png"
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/tika.env
 
@@ -104,6 +116,8 @@ services:
     image: ghcr.io/open-webui/open-webui:latest
     container_name: paperless-open-webui
     restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://github.com/open-webui/open-webui/raw/main/static/favicon.png"
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/open-webui.env
     depends_on:
@@ -117,6 +131,8 @@ services:
   paperless-ollama:
     image: ollama/ollama:latest
     container_name: paperless-ollama
+    labels:
+      net.unraid.docker.icon: "https://github.com/ollama/ollama/raw/main/docs/ollama.png"
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/ollama.env
     volumes:
@@ -137,6 +153,8 @@ services:
     image: clusterzx/paperless-ai:latest
     container_name: paperless-ai
     restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/clusterzx/paperless-ai/main/public/logo.png"
     depends_on:
       - paperless-ollama
       - paperless
@@ -152,6 +170,8 @@ services:
     image: icereed/paperless-gpt:latest
     container_name: paperless-gpt
     restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/icereed/paperless-gpt/main/web-app/public/paperless-gpt-icon.png"
     depends_on:
       - paperless-ollama
       - paperless
@@ -167,6 +187,8 @@ services:
     image: amir20/dozzle:latest
     restart: unless-stopped
     container_name: dozzle
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/amir20/dozzle/master/public/android-chrome-512x512.png"
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/dozzle.env
     volumes:
