@@ -19,6 +19,8 @@ Unified Docker Compose stack for Borg (Unraid server) including monitoring and d
 | `paperless-open-webui` | Ollama model management | 3001 |
 | `paperless-ai` | Auto metadata suggestions | 3000 |
 | `paperless-gpt` | Vision OCR enhancement | 3002 |
+| **Utilities** | | |
+| `dozzle` | Container log viewer | 8484 |
 
 ## Hardware
 

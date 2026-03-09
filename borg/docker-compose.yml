@@ -21,7 +21,7 @@ services:
       # Docker socket (read-only) - monitor Unraid containers
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
-      # Host filesystem (read-only) - monitor system resources
+      # Host filesystem (read-only) - monitor this host's resources
       - /:/host:ro
 
     # Security hardening
@@ -47,10 +47,10 @@ services:
     env_file:
       - ./paperless/.env
     depends_on:
-      - postgres
-      - redis
-      - gotenberg
-      - tika
+      - paperless-postgres
+      - paperless-redis
+      - paperless-gotenberg
+      - paperless-tika
     ports:
       - "8000:8000"
     volumes:
@@ -60,29 +60,29 @@ services:
       - /mnt/user/Documents/consume:/usr/src/paperless/consume
 
   # postgres database for paperless-ngx
-  postgres:
+  paperless-postgres:
     image: postgres:16
     restart: unless-stopped
-    container_name: postgres
+    container_name: paperless-postgres
     env_file:
       - ./postgres/.env
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/postgres:/var/lib/postgresql/data
 
-  # redis database for paperless-ngx
-  redis:
+  # redis cache/queue for paperless-ngx
+  paperless-redis:
     image: docker.io/library/redis:7
-    container_name: redis
+    container_name: paperless-redis
     restart: unless-stopped
     env_file:
       - ./redis/.env
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/redis:/data
 
-  # gotenberg service that paperless uses for document conversion
-  gotenberg:
+  # gotenberg - converts Word, Excel, etc. to PDF
+  paperless-gotenberg:
     image: docker.io/gotenberg/gotenberg:8
-    container_name: gotenberg
+    container_name: paperless-gotenberg
     env_file:
       - ./gotenberg/.env
     restart: unless-stopped
@@ -91,31 +91,31 @@ services:
       - "--chromium-disable-javascript=true"
       - "--chromium-allow-list=file:///tmp/.*"
 
-  # tika service that paperless uses for document text extraction
-  tika:
+  # tika - text extraction from documents
+  paperless-tika:
     image: docker.io/apache/tika:latest
-    container_name: tika
+    container_name: paperless-tika
     restart: unless-stopped
     env_file: ./tika/.env
 
-  # open-webui service for LLM interaction
-  open-webui:
+  # open-webui - pull and manage Ollama models via a browser UI
+  paperless-open-webui:
     image: ghcr.io/open-webui/open-webui:latest
-    container_name: open-webui
+    container_name: paperless-open-webui
     restart: unless-stopped
     env_file:
       - ./open-webui/.env
     depends_on:
-      - ollama
+      - paperless-ollama
     ports:
       - "3001:8080"
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/open-webui:/app/backend/data
 
-  # ollama service for local LLMs
-  ollama:
+  # ollama - local LLM inference (GPU-accelerated)
+  paperless-ollama:
     image: ollama/ollama:latest
-    container_name: ollama
+    container_name: paperless-ollama
     env_file:
       - ./ollama/.env
     volumes:
@@ -131,13 +131,13 @@ services:
               device_ids: ['GPU-a0c637a6-a078-71e5-ffba-72dd70ee8933']
               capabilities: [gpu]
 
-  # paperless-ai service
+  # paperless-ai - automatic tagging and metadata suggestions
   paperless-ai:
     image: clusterzx/paperless-ai:latest
     container_name: paperless-ai
     restart: unless-stopped
     depends_on:
-      - ollama
+      - paperless-ollama
       - paperless
     ports:
       - "3000:3000"
@@ -146,13 +146,13 @@ services:
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless-ai:/app/data
 
-  # paperless-gpt service
+  # paperless-gpt - vision OCR and GPT-based metadata suggestions
   paperless-gpt:
     image: icereed/paperless-gpt:latest
     container_name: paperless-gpt
     restart: unless-stopped
     depends_on:
-      - ollama
+      - paperless-ollama
       - paperless
     ports:
       - "3002:8080"
@@ -161,7 +161,7 @@ services:
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless-gpt/prompts:/app/prompts
 
-  # optional but helpful log viewer
+  # dozzle - log viewer for all containers on this host
   dozzle:
     image: amir20/dozzle:latest
     restart: unless-stopped
@@ -172,4 +172,4 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/dozzle:/data
     ports:
-      - "8080:8080"
+      - "8484:8080"
