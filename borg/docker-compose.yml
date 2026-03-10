@@ -4,7 +4,7 @@ services:
     container_name: beszel-agent
     restart: unless-stopped
     labels:
-      net.unraid.docker.icon: "https://raw.githubusercontent.com/JamsRepos/Unraid-Templates/master/logos/beszel.png"
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/henrygd/beszel/main/internal/site/public/static/icon.png"
 
     # Use host networking for simplest setup
     network_mode: host
