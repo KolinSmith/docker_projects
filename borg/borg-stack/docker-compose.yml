@@ -40,6 +40,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/selfhosters/unRAID-CA-templates/master/templates/img/dozzle.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8484]/"
     environment:
       TZ: America/Chicago
     volumes:
@@ -56,6 +57,7 @@ services:
     pid: host
     labels:
       net.unraid.docker.icon: "https://github.com/nicolargo/glances/raw/master/glances/outputs/static/img/glances.png"
+      net.unraid.docker.webui: "http://[IP]:61208/"
     environment:
       TZ: America/Chicago
       GLANCES_OPT: "-w"
@@ -70,6 +72,7 @@ services:
     privileged: true
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/selfhosters/unRAID-CA-templates/master/templates/img/scrutiny.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8383]/"
     environment:
       TZ: America/Chicago
     volumes:
@@ -84,6 +87,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/speedtest-tracker-logo.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8010]/"
     environment:
       TZ: America/Chicago
       PUID: "99"
@@ -108,6 +112,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/bluewave-labs/checkmate/develop/Client/public/images/checkmate-icon.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:52345]/"
     environment:
       TZ: America/Chicago
       CLIENT_HOST: "http://192.168.9.7"
@@ -155,6 +160,7 @@ services:
       - proxynet
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/icons/nginx-proxy-manager.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:7818]/"
     environment:
       TZ: America/Los_Angeles
       USER_ID: "99"
@@ -176,6 +182,7 @@ services:
     network_mode: host
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/plex-icon.png"
+      net.unraid.docker.webui: "http://[IP]:32400/web"
     environment:
       TZ: America/Chicago
       PUID: "99"
@@ -205,6 +212,7 @@ services:
     network_mode: host
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/RandomNinjaAtk/unraid-templates/main/randomninjaatk/img/ersatztv.png"
+      net.unraid.docker.webui: "http://[IP]:8409/"
     environment:
       TZ: America/Chicago
       NVIDIA_VISIBLE_DEVICES: "GPU-a0c637a6-a078-71e5-ffba-72dd70ee8933"
@@ -226,6 +234,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/tautulli-logo.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8181]/"
     environment:
       TZ: America/Chicago
       PUID: "99"
@@ -244,6 +253,7 @@ services:
       - proxynet
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/overseerr-logo.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:5055]/"
     environment:
       TZ: America/Chicago
       PUID: "99"
@@ -281,6 +291,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/sabnzbd-icon.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8080]/"
     environment:
       TZ: America/Chicago
       PUID: "99"
@@ -299,6 +310,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/nzbhydra-icon.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:5076]/"
     environment:
       TZ: America/Chicago
       PUID: "99"
@@ -317,6 +329,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/radarr-icon.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:7878]/"
     environment:
       TZ: America/Chicago
       PUID: "99"
@@ -335,6 +348,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/sonarr-icon.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8989]/"
     environment:
       TZ: America/Chicago
       PUID: "99"
@@ -354,6 +368,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/bazarr-logo.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:6767]/"
     environment:
       TZ: America/Chicago
       PUID: "99"
@@ -371,6 +386,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/plexguide/Huntarr.io/main/frontend/static/huntarr.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:9705]/"
     environment:
       TZ: America/Chicago
     volumes:
@@ -384,6 +400,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/selfhosters/unRAID-CA-templates/master/templates/img/requestrr.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:4545]/"
     environment:
       TZ: America/Los_Angeles
     volumes:

@@ -9,6 +9,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/selfhosters/unRAID-CA-templates/master/templates/img/paperless.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8000]/"
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless.env
     depends_on:
@@ -79,6 +80,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://github.com/open-webui/open-webui/raw/main/static/favicon.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:3001]/"
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/open-webui.env
     depends_on:
@@ -94,6 +96,7 @@ services:
     container_name: paperless-ollama
     labels:
       net.unraid.docker.icon: "https://ollama.ai/public/ollama.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:11434]/"
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/ollama.env
     volumes:
@@ -116,6 +119,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/nwithan8/unraid_templates/master/images/paperless-ai-icon.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:3000]/"
     depends_on:
       - paperless-ollama
       - paperless
@@ -133,6 +137,7 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/MorgothRB/Unraid-Templates/refs/heads/main/paperless-gpt/paperless-gpt.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:3002]/"
     depends_on:
       - paperless-ollama
       - paperless
