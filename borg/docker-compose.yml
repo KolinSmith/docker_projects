@@ -11,7 +11,7 @@ services:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/selfhosters/unRAID-CA-templates/master/templates/img/paperless.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:8000]/"
     env_file:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless.env
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless-ngx.env
     depends_on:
       - paperless-postgres
       - paperless-redis
@@ -33,9 +33,9 @@ services:
     labels:
       net.unraid.docker.icon: "https://github.com/juusujanar/unraid-templates/raw/master/img/PostgreSQL-logo.png"
     env_file:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/postgres.env
+      - /mnt/disks/appdataAndDocker/appdata/paperless-postgres/postgres.env
     volumes:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/postgres:/var/lib/postgresql/data
+      - /mnt/disks/appdataAndDocker/appdata/paperless-postgres/data:/var/lib/postgresql/data
 
   # redis cache/queue for paperless-ngx
   paperless-redis:
@@ -45,9 +45,9 @@ services:
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/juusujanar/unraid-templates/master/img/Redis-logo.png"
     env_file:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/redis.env
+      - /mnt/disks/appdataAndDocker/appdata/paperless-redis/redis.env
     volumes:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/redis:/data
+      - /mnt/disks/appdataAndDocker/appdata/paperless-redis/data:/data
 
   # gotenberg - converts Word, Excel, etc. to PDF
   paperless-gotenberg:
@@ -56,7 +56,7 @@ services:
     labels:
       net.unraid.docker.icon: "https://gotenberg.dev/img/logo.png"
     env_file:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/gotenberg.env
+      - /mnt/disks/appdataAndDocker/appdata/paperless-gotenberg/gotenberg.env
     restart: unless-stopped
     command:
       - "gotenberg"
@@ -71,7 +71,7 @@ services:
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/sgraaf/Unraid-Docker-Templates/main/tika/icon.png"
     env_file:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/tika.env
+      - /mnt/disks/appdataAndDocker/appdata/paperless-tika/tika.env
 
   # open-webui - pull and manage Ollama models via a browser UI
   paperless-open-webui:
@@ -82,13 +82,13 @@ services:
       net.unraid.docker.icon: "https://github.com/open-webui/open-webui/raw/main/static/favicon.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:3001]/"
     env_file:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/open-webui.env
+      - /mnt/disks/appdataAndDocker/appdata/paperless-open-webui/open-webui.env
     depends_on:
       - paperless-ollama
     ports:
       - "3001:8080"
     volumes:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/open-webui:/app/backend/data
+      - /mnt/disks/appdataAndDocker/appdata/paperless-open-webui/data:/app/backend/data
 
   # ollama - local LLM inference (GPU-accelerated)
   paperless-ollama:
@@ -98,9 +98,9 @@ services:
       net.unraid.docker.icon: "https://ollama.ai/public/ollama.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:11434]/"
     env_file:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/ollama.env
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ollama/ollama.env
     volumes:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/ollama:/root/.ollama
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ollama/data:/root/.ollama
     restart: unless-stopped
     ports:
       - "11434:11434"
@@ -126,9 +126,9 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless-ai.env
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ai/paperless-ai.env
     volumes:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless-ai:/app/data
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ai/data:/app/data
 
   # paperless-gpt - vision OCR and GPT-based metadata suggestions
   paperless-gpt:
@@ -144,6 +144,6 @@ services:
     ports:
       - "3002:8080"
     env_file:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless-gpt.env
+      - /mnt/disks/appdataAndDocker/appdata/paperless-gpt/paperless-gpt.env
     volumes:
-      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless-gpt/prompts:/app/prompts
+      - /mnt/disks/appdataAndDocker/appdata/paperless-gpt/prompts:/app/prompts
