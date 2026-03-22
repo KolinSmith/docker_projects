@@ -162,7 +162,7 @@ services:
   #     net.unraid.docker.icon: "https://raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/icons/nginx-proxy-manager.png"
   #     net.unraid.docker.webui: "http://[IP]:[PORT:7818]/"
   #   environment:
-  #     TZ: America/Los_Angeles
+  #     TZ: America/Chicago
   #     USER_ID: "99"
   #     GROUP_ID: "100"
   #     UMASK: "000"
@@ -402,7 +402,7 @@ services:
   #     net.unraid.docker.icon: "https://raw.githubusercontent.com/selfhosters/unRAID-CA-templates/master/templates/img/requestrr.png"
   #     net.unraid.docker.webui: "http://[IP]:[PORT:4545]/"
   #   environment:
-  #     TZ: America/Los_Angeles
+  #     TZ: America/Chicago
   #   volumes:
   #     - /mnt/disks/appdataAndDocker/appdata/requestrr:/root/config/
   #   ports:

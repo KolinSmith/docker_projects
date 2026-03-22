@@ -10,6 +10,8 @@ services:
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/selfhosters/unRAID-CA-templates/master/templates/img/paperless.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:8000]/"
+    environment:
+      TZ: America/Chicago
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless-ngx.env
     depends_on:
@@ -32,6 +34,8 @@ services:
     container_name: paperless-postgres
     labels:
       net.unraid.docker.icon: "https://github.com/juusujanar/unraid-templates/raw/master/img/PostgreSQL-logo.png"
+    environment:
+      TZ: America/Chicago
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-postgres/postgres.env
     volumes:
@@ -44,6 +48,8 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/juusujanar/unraid-templates/master/img/Redis-logo.png"
+    environment:
+      TZ: America/Chicago
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-redis/redis.env
     volumes:
@@ -55,6 +61,8 @@ services:
     container_name: paperless-gotenberg
     labels:
       net.unraid.docker.icon: "https://gotenberg.dev/img/logo.png"
+    environment:
+      TZ: America/Chicago
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-gotenberg/gotenberg.env
     restart: unless-stopped
@@ -70,6 +78,8 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/sgraaf/Unraid-Docker-Templates/main/tika/icon.png"
+    environment:
+      TZ: America/Chicago
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-tika/tika.env
 
@@ -81,6 +91,8 @@ services:
     labels:
       net.unraid.docker.icon: "https://github.com/open-webui/open-webui/raw/main/static/favicon.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:3001]/"
+    environment:
+      TZ: America/Chicago
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-open-webui/open-webui.env
     depends_on:
@@ -97,6 +109,8 @@ services:
     labels:
       net.unraid.docker.icon: "https://ollama.ai/public/ollama.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:11434]/"
+    environment:
+      TZ: America/Chicago
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ollama/ollama.env
     volumes:
@@ -120,6 +134,8 @@ services:
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/nwithan8/unraid_templates/master/images/paperless-ai-icon.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:3000]/"
+    environment:
+      TZ: America/Chicago
     depends_on:
       - paperless-ollama
       - paperless
@@ -138,6 +154,8 @@ services:
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/MorgothRB/Unraid-Templates/refs/heads/main/paperless-gpt/paperless-gpt.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:3002]/"
+    environment:
+      TZ: America/Chicago
     depends_on:
       - paperless-ollama
       - paperless
