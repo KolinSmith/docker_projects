@@ -151,6 +151,8 @@ services:
     image: bytemark/webdav
     container_name: paperless-webdav
     restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/Qballjos/portainer_templates/master/Images/webdav.png"
     environment:
       TZ: America/Chicago
       AUTH_TYPE: Basic
