@@ -155,7 +155,7 @@ services:
       TZ: America/Chicago
       AUTH_TYPE: Basic
       USERNAME: scan
-      PASSWORD: uoZa#VP3YvnAII6hcwOl&WQ2v
+      PASSWORD: changemekolin
     ports:
       - "8008:80"
     volumes:
