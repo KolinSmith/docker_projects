@@ -19,6 +19,7 @@ Unified Docker Compose stack for Borg (Unraid server) including monitoring and d
 | `paperless-open-webui` | Ollama model management | 3001 |
 | `paperless-ai` | Auto metadata suggestions | 3000 |
 | `paperless-gpt` | Vision OCR enhancement | 3002 |
+| `paperless-webdav` | WebDAV endpoint for Scanner Pro uploads | 8008 |
 | **Utilities** | | |
 | `dozzle` | Container log viewer | 8484 |
 
@@ -347,8 +348,14 @@ Set these required variables:
 - `PAPERLESS_API_TOKEN` - Generate after first login (Profile → API Tokens)
 
 ### 3. Deploy
+
+> **Note:** The paperless stack lives directly at the root of the compose manager projects directory, not in a subdirectory:
+> ```
+> /boot/config/plugins/compose.manager/projects/docker-compose.yml
+> ```
+> Deploy with:
 ```bash
-docker compose up -d
+sudo docker compose -f /boot/config/plugins/compose.manager/projects/docker-compose.yml up -d
 ```
 
 ### 4. Access Paperless
