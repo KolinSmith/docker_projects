@@ -146,6 +146,21 @@ services:
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ai/data:/app/data
 
+  # webdav - exposes consume directory for Scanner Pro uploads
+  paperless-webdav:
+    image: bytemark/webdav
+    container_name: paperless-webdav
+    restart: unless-stopped
+    environment:
+      TZ: America/Chicago
+      AUTH_TYPE: Basic
+      USERNAME: scanner
+      PASSWORD: changeme
+    ports:
+      - "8008:80"
+    volumes:
+      - /mnt/user/paperless/consume:/var/lib/dav/data
+
   # paperless-gpt - vision OCR and GPT-based metadata suggestions
   paperless-gpt:
     image: icereed/paperless-gpt:latest
