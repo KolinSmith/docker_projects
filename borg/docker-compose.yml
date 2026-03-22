@@ -157,7 +157,7 @@ services:
       TZ: America/Chicago
       AUTH_TYPE: Basic
       USERNAME: scan
-      PASSWORD: changemekolin
+      PASSWORD: Chastise8-Alike-Emcee
     ports:
       - "8008:80"
     volumes:
