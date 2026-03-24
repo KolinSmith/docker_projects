@@ -1,0 +1,193 @@
+name: paperless
+
+services:
+
+  # paperless-ngx main service
+  paperless:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    container_name: paperless-ngx
+    restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/selfhosters/unRAID-CA-templates/master/templates/img/paperless.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8000]/"
+    environment:
+      TZ: America/Chicago
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/paperless-ngx.env
+    depends_on:
+      - paperless-postgres
+      - paperless-redis
+      - paperless-gotenberg
+      - paperless-tika
+    ports:
+      - "8000:8000"
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ngx/data:/usr/src/paperless/data
+      - /mnt/user/paperless/media:/usr/src/paperless/media
+      - /mnt/user/paperless/export:/usr/src/paperless/export
+      - /mnt/user/paperless/consume:/usr/src/paperless/consume
+
+  # postgres database for paperless-ngx
+  paperless-postgres:
+    image: postgres:16
+    restart: unless-stopped
+    container_name: paperless-postgres
+    labels:
+      net.unraid.docker.icon: "https://github.com/juusujanar/unraid-templates/raw/master/img/PostgreSQL-logo.png"
+    environment:
+      TZ: America/Chicago
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-postgres/postgres.env
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-postgres/data:/var/lib/postgresql/data
+
+  # redis cache/queue for paperless-ngx
+  paperless-redis:
+    image: docker.io/library/redis:7
+    container_name: paperless-redis
+    restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/juusujanar/unraid-templates/master/img/Redis-logo.png"
+    environment:
+      TZ: America/Chicago
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-redis/redis.env
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-redis/data:/data
+
+  # gotenberg - converts Word, Excel, etc. to PDF
+  paperless-gotenberg:
+    image: docker.io/gotenberg/gotenberg:8
+    container_name: paperless-gotenberg
+    labels:
+      net.unraid.docker.icon: "https://gotenberg.dev/img/logo.png"
+    environment:
+      TZ: America/Chicago
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-gotenberg/gotenberg.env
+    restart: unless-stopped
+    command:
+      - "gotenberg"
+      - "--chromium-disable-javascript=true"
+      - "--chromium-allow-list=file:///tmp/.*"
+
+  # tika - text extraction from documents
+  paperless-tika:
+    image: docker.io/apache/tika:latest
+    container_name: paperless-tika
+    restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/sgraaf/Unraid-Docker-Templates/main/tika/icon.png"
+    environment:
+      TZ: America/Chicago
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-tika/tika.env
+
+  # open-webui - pull and manage Ollama models via a browser UI
+  paperless-open-webui:
+    image: ghcr.io/open-webui/open-webui:latest
+    container_name: paperless-open-webui
+    restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://github.com/open-webui/open-webui/raw/main/static/favicon.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:3001]/"
+    environment:
+      TZ: America/Chicago
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-open-webui/open-webui.env
+    depends_on:
+      - paperless-ollama
+    ports:
+      - "3001:8080"
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-open-webui/data:/app/backend/data
+
+  # ollama - local LLM inference (GPU-accelerated)
+  paperless-ollama:
+    image: ollama/ollama:latest
+    container_name: paperless-ollama
+    labels:
+      net.unraid.docker.icon: "https://ollama.ai/public/ollama.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:11434]/"
+    environment:
+      TZ: America/Chicago
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ollama/ollama.env
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ollama/data:/root/.ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['GPU-a0c637a6-a078-71e5-ffba-72dd70ee8933']
+              capabilities: [gpu]
+
+  # paperless-ai - automatic tagging and metadata suggestions
+  paperless-ai:
+    image: clusterzx/paperless-ai:latest
+    container_name: paperless-ai
+    restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/nwithan8/unraid_templates/master/images/paperless-ai-icon.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:3000]/"
+    environment:
+      TZ: America/Chicago
+    depends_on:
+      - paperless-ollama
+      - paperless
+    ports:
+      - "3000:3000"
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ai/paperless-ai.env
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-ai/data:/app/data
+
+  # webdav - exposes consume directory for Scanner Pro uploads
+  paperless-webdav:
+    image: bytemark/webdav
+    container_name: paperless-webdav
+    restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/Qballjos/portainer_templates/master/Images/webdav.png"
+    env_file:
+      - webdav/.env
+    environment:
+      TZ: America/Chicago
+      AUTH_TYPE: Basic
+      USERNAME: ${WEBDAV_USERNAME}
+      PASSWORD: ${WEBDAV_PASSWORD}
+    ports:
+      - "8008:80"
+    volumes:
+      - /mnt/user/paperless/consume:/var/lib/dav/data
+
+  # paperless-gpt - vision OCR and GPT-based metadata suggestions
+  paperless-gpt:
+    image: icereed/paperless-gpt:latest
+    container_name: paperless-gpt
+    restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/MorgothRB/Unraid-Templates/refs/heads/main/paperless-gpt/paperless-gpt.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:3002]/"
+    environment:
+      TZ: America/Chicago
+      IMAGE_MAX_RENDER_DPI: "72"
+      # Vision OCR enabled using qwen2.5vl:7b (set in paperless-gpt.env).
+      # minicpm-v:8b crashes on GTX 1660 (Turing) — GGML_ASSERT(buffer) failed on page 2+.
+      # qwen2.5vl:7b works but is slow (~6 min/doc) due to CPU offloading — 7B model exceeds 6GB VRAM.
+      # After GPU upgrade to Ampere (16GB+), switch back to minicpm-v:8b for full GPU speed.
+      # See .claude/plans/2026-03-22-gpu-upgrade.md
+      PDF_OCR_TAGGING: "true"
+    depends_on:
+      - paperless-ollama
+      - paperless
+    ports:
+      - "3002:8080"
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-gpt/paperless-gpt.env
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/paperless-gpt/prompts:/app/prompts
