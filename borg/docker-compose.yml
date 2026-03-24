@@ -174,9 +174,12 @@ services:
     environment:
       TZ: America/Chicago
       IMAGE_MAX_RENDER_DPI: "72"
-      # Vision OCR disabled — GGML_ASSERT crash on GTX 1660 (Turing) with minicpm-v:8b on multi-page docs.
-      # Re-enable after upgrading to Ampere GPU. See .claude/plans/2026-03-22-gpu-upgrade.md
-      PDF_OCR_TAGGING: "false"
+      # Vision OCR enabled using qwen2.5vl:7b (set in paperless-gpt.env).
+      # minicpm-v:8b crashes on GTX 1660 (Turing) — GGML_ASSERT(buffer) failed on page 2+.
+      # qwen2.5vl:7b works but is slow (~6 min/doc) due to CPU offloading — 7B model exceeds 6GB VRAM.
+      # After GPU upgrade to Ampere (16GB+), switch back to minicpm-v:8b for full GPU speed.
+      # See .claude/plans/2026-03-22-gpu-upgrade.md
+      PDF_OCR_TAGGING: "true"
     depends_on:
       - paperless-ollama
       - paperless

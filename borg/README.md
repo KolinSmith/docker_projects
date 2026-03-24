@@ -365,7 +365,7 @@ sudo docker compose -f /boot/config/plugins/compose.manager/projects/docker-comp
 
 ### 5. Pull AI models (via Open WebUI)
 - Access: http://borg:3001
-- Pull models: `llama3.2:3b` and `minicpm-v:8b`
+- Pull models: `llama3.2:3b` and `qwen2.5vl:7b`
 
 ## Features
 
@@ -378,12 +378,14 @@ sudo docker compose -f /boot/config/plugins/compose.manager/projects/docker-comp
 **AI-Enhanced (GPU-accelerated):**
 - Automatic metadata suggestions (Paperless-AI)
 - Auto-tagging and title generation (Paperless-GPT via `llama3.2:3b`)
+- Vision OCR (Paperless-GPT via `qwen2.5vl:7b`)
 - Local LLM inference (Ollama with NVIDIA GPU)
 
-> **Note:** Vision-based OCR (`minicpm-v:8b`) is currently disabled (`PDF_OCR_TAGGING=false` in `paperless-gpt.env`).
-> This is a known crash (`GGML_ASSERT(buffer) failed`) on Turing-architecture GPUs (GTX 1660) when processing
-> multi-page documents. Re-enable after upgrading to an Ampere GPU (RTX A4000, A2000, or 30-series).
-> See `.claude/plans/2026-03-22-gpu-upgrade.md` for upgrade plan.
+> **Note on Vision OCR performance:** `qwen2.5vl:7b` works correctly but is slow (~6 min/doc) because the 7B
+> model exceeds the GTX 1660's 6GB VRAM — Ollama offloads ~9 layers to CPU RAM. `minicpm-v:8b` crashes on the
+> GTX 1660 with `GGML_ASSERT(buffer) failed` on page 2+ of multi-page docs (Turing architecture limitation).
+> After upgrading to an Ampere GPU (16GB+ VRAM), switch `VISION_LLM_MODEL` back to `minicpm-v:8b` for full
+> GPU-accelerated speed. See `.claude/plans/2026-03-22-gpu-upgrade.md`.
 
 ## Usage
 
