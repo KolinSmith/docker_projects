@@ -434,7 +434,7 @@ The WebDAV endpoint is exposed externally via a `scan` subdomain routed through 
    - Go to: Settings → Cloud Services → Add → WebDAV
    - Server: `https://scan.yourdomain.com`
    - Path: `/`
-   - Username/Password: set in `paperless-webdav` environment (see `.env`)
+   - Username/Password: set in `webdav/.env` (copy from `webdav/.env.example`)
 
 ### Flow
 

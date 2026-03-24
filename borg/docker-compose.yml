@@ -153,11 +153,13 @@ services:
     restart: unless-stopped
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/Qballjos/portainer_templates/master/Images/webdav.png"
+    env_file:
+      - webdav/.env
     environment:
       TZ: America/Chicago
       AUTH_TYPE: Basic
-      USERNAME: scan
-      PASSWORD: Chastise8-Alike-Emcee
+      USERNAME: ${WEBDAV_USERNAME}
+      PASSWORD: ${WEBDAV_PASSWORD}
     ports:
       - "8008:80"
     volumes:
