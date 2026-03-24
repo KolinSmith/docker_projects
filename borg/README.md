@@ -409,6 +409,47 @@ To verify GPU is being used:
 docker exec paperless-ollama nvidia-smi
 ```
 
+## Scanner Pro Upload (iPhone → Paperless)
+
+Documents can be scanned and uploaded directly from iPhone using [Scanner Pro](https://readdle.com/scannerpro) via WebDAV.
+
+### How it works
+
+The `paperless-webdav` container (bytemark/webdav) exposes the Paperless consume directory as a WebDAV endpoint. Scanner Pro uploads scans to WebDAV, which drops them into `/mnt/user/paperless/consume`, where Paperless auto-ingests them.
+
+### External access setup
+
+The WebDAV endpoint is exposed externally via a `scan` subdomain routed through Cloudflare and Nginx Proxy Manager:
+
+1. **Cloudflare DNS** — Add a CNAME record:
+   - Name: `scan`
+   - Target: your home/server IP (or use Cloudflare proxy)
+
+2. **Nginx Proxy Manager** — Add a proxy host:
+   - Domain: `scan.yourdomain.com`
+   - Forward to: `192.168.9.7:8008` (internal Borg IP)
+   - SSL: Let's Encrypt cert, Force SSL enabled
+
+3. **Scanner Pro config** (iOS):
+   - Go to: Settings → Cloud Services → Add → WebDAV
+   - Server: `https://scan.yourdomain.com`
+   - Path: `/`
+   - Username/Password: set in `paperless-webdav` environment (see `.env`)
+
+### Flow
+
+```
+Scanner Pro → HTTPS → Cloudflare → NPM → paperless-webdav:8008
+                                              ↓
+                              /mnt/user/paperless/consume
+                                              ↓
+                              Paperless auto-ingests → OCR → AI tagging
+```
+
+The `AI Auto-Process` workflow in Paperless fires on every new document, automatically applying the `paperless-gpt-auto` and `paperless-gpt-ocr-auto` tags to trigger AI processing.
+
+---
+
 ## Troubleshooting
 
 **AI services not working:**
@@ -419,6 +460,11 @@ docker exec paperless-ollama nvidia-smi
 **OCR not working:**
 1. Check Tika/Gotenberg logs
 2. Verify PAPERLESS_TIKA_ENABLED=1
+
+**WebDAV upload not appearing in Paperless:**
+1. Verify file landed in consume dir: `ls /mnt/user/paperless/consume/`
+2. Check paperless-webdav logs: `docker logs paperless-webdav`
+3. Check paperless-ngx consumer logs: `docker logs paperless-ngx | grep consumer`
 
 ## References
 
