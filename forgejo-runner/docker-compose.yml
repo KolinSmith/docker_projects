@@ -1,0 +1,98 @@
+services:
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    user: "0:0"  # Must run as root for system monitoring
+    tty: false
+    stdin_open: false
+    network_mode: host
+    environment:
+      PORT: 45876
+      KEY: "${BESZEL_AGENT_KEY}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/host:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+      - SYS_PTRACE
+      - NET_ADMIN
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=128m
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          pids: 128
+        reservations:
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+  forgejo-runner:
+    image: code.forgejo.org/forgejo/runner:12.6.3
+    container_name: forgejo-runner
+    command: /bin/forgejo-runner daemon
+    restart: unless-stopped
+    user: "1000:999"  # UID matches image default (owns /data), GID 999 = docker group for socket access
+    tty: false
+    stdin_open: false
+    environment:
+      # Forgejo instance URL (from vault)
+      FORGEJO_INSTANCE_URL: "${FORGEJO_INSTANCE_URL}"
+      # Runner registration token (from Forgejo web UI: Site Admin → Actions → Runners)
+      FORGEJO_RUNNER_REGISTRATION_TOKEN: "${FORGEJO_RUNNER_TOKEN}"
+      # Runner name
+      FORGEJO_RUNNER_NAME: orange-pi-r1-plus
+      # Runner labels (defines what jobs this runner can handle)
+      # Labels: arm64 (architecture), docker (can run containers), linux (OS), ansible (can run playbooks)
+      FORGEJO_RUNNER_LABELS: arm64,docker,linux,ansible
+    volumes:
+      - runner_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - runner_config:/etc/forgejo-runner
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - DAC_OVERRIDE  # Required for Docker socket access
+      - CHOWN
+      - SETGID
+      - SETUID
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          pids: 256
+        reservations:
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - runner_network
+
+networks:
+  runner_network:
+    driver: bridge
+
+volumes:
+  runner_data:
+    driver: local
+  runner_config:
+    driver: local

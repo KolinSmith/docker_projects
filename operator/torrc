@@ -1,7 +1,6 @@
 # Tor Relay Configuration
-# Example configuration - customize before deploying!
-# Default: Middle relay / Guard node (no exit traffic)
-# See https://github.com/KolinSmith/tor-relay-docker for exit relay configuration
+# Middle relay / Guard node (no exit traffic)
+# Nickname and ContactInfo are set via environment variables in .env
 
 # Disable SOCKS proxy (relay only, no local connections)
 SOCKSPort 0
@@ -24,20 +23,27 @@ CookieAuthentication 1
 ############### Relay Configuration ###############
 
 # Relay ports
-ORPort 8443
-DirPort 8444
+ORPort 8443 IPv4Only
+DirPort 8444 IPv4Only
 
-# Relay identity (REQUIRED: Change these before deploying!)
+# Relay identity - Set via TOR_NICKNAME and TOR_CONTACT_INFO env vars
+# These placeholder values are overridden by environment variables
 Nickname YourRelayNickname
 ContactInfo your-email@example.com
 
 # Bandwidth limits
-# 1000 KB/s = ~1 MB/s sustained, 1500 KB/s = ~1.5 MB/s bursts
-RelayBandwidthRate 1000 KBytes
-RelayBandwidthBurst 1500 KBytes
+# 3000 KB/s = ~3 MB/s sustained, 4000 KB/s = ~4 MB/s bursts
+# Tested stable on Orange Pi 3B (ARM CPU: 14-27% CPU at 3 MB/s)
+RelayBandwidthRate 3000 KBytes
+RelayBandwidthBurst 4000 KBytes
+
+# Limit advertised bandwidth to prevent CPU overload (Orange Pi 3B ARM CPU)
+# Circuit creation is CPU-intensive; MaxAdvertised prevents request overload
+# Without this: 5 MB/s caused 55% CPU and tens of thousands of warnings
+# With 3 MB/s: CPU stays at 14-27% with zero circuit creation warnings
+MaxAdvertisedBandwidth 3000 KBytes
 
 # Exit policy: Middle relay / Guard node (no exit traffic)
-# For exit relay configuration, see https://github.com/KolinSmith/tor-relay-docker README
 ExitPolicy reject *:*
 
 # Uncomment if running multiple relays (add fingerprints)

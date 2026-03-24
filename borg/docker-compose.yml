@@ -16,7 +16,7 @@ services:
 
     volumes:
       # Beszel agent data storage
-      - /mnt/user/appdata/beszel-agent:/var/lib/beszel-agent
+      - /mnt/disks/appdataAndDocker/appdata/beszel-agent:/var/lib/beszel-agent
 
       # Docker socket (read-only) - monitor Unraid containers
       - /var/run/docker.sock:/var/run/docker.sock:ro

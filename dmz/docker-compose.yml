@@ -28,20 +28,8 @@ services:
       - /home/ubuntu/docker-data/traefik/data/acme.json:/acme-cloudflare.json
       - /home/ubuntu/docker-data/traefik/data/configurations:/configurations
     labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      # Route for duckdns domain
-      - "traefik.http.routers.traefik-secure.entrypoints=websecure"
-      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${DUCKDNS_DOMAIN}`)"
-      - "traefik.http.routers.traefik-secure.tls.certresolver=duckdns"
-      - "traefik.http.routers.traefik-secure.service=api@internal"
-      - "traefik.http.routers.traefik-secure.middlewares=user-auth@file"
-      # Route for search domain
-      - "traefik.http.routers.traefik-searchdomain.entrypoints=websecure"
-      - "traefik.http.routers.traefik-searchdomain.rule=Host(`traefik.${SEARCH_DOMAIN}`)"
-      - "traefik.http.routers.traefik-searchdomain.tls.certresolver=cloudflare"
-      - "traefik.http.routers.traefik-searchdomain.service=api@internal"
-      - "traefik.http.routers.traefik-searchdomain.middlewares=user-auth@file"
+      # Dashboard disabled for security - no public management interface
+      - "traefik.enable=false"
     # healthcheck:
     #   test: ["CMD", "traefik", "healthcheck", "--ping"]
     #   interval: 10s
