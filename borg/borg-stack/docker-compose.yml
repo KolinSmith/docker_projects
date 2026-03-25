@@ -87,7 +87,7 @@ services:
     pid: host
 
     labels:
-      net.unraid.docker.icon: "https://github.com/nicolargo/glances/raw/master/glances/outputs/static/img/glances.png"
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/glances.png"
       net.unraid.docker.webui: "http://[IP]:61208/"
 
     env_file:
@@ -173,7 +173,7 @@ services:
     network_mode: host
 
     labels:
-      net.unraid.docker.icon: "https://raw.githubusercontent.com/RandomNinjaAtk/unraid-templates/main/randomninjaatk/img/ersatztv.png"
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/ersatztv.png"
       net.unraid.docker.webui: "http://[IP]:8409/"
 
     env_file:
@@ -267,7 +267,7 @@ services:
     network_mode: bridge
 
     labels:
-      net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/nzbhydra-icon.png"
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nzbhydra2.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:5076]/"
 
     ports:
@@ -410,7 +410,7 @@ services:
       - proxynet
 
     labels:
-      net.unraid.docker.icon: "https://raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/icons/nginx-proxy-manager.png"
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nginx-proxy-manager.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:7818]/"
 
     ports:
