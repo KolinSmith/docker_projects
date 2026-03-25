@@ -137,10 +137,8 @@ services:
     environment:
       TZ: America/Chicago
     depends_on:
-      paperless-ollama:
-        condition: service_started
-      paperless:
-        condition: service_healthy
+      - paperless-ollama
+      - paperless
     ports:
       - "3000:3000"
     env_file:
@@ -154,7 +152,7 @@ services:
     container_name: paperless-webdav
     restart: unless-stopped
     labels:
-      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/webdav.png"
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/Qballjos/portainer_templates/master/Images/webdav.png"
     env_file:
       - webdav/.env
     environment:
@@ -185,10 +183,8 @@ services:
       # See .claude/plans/2026-03-22-gpu-upgrade.md
       PDF_OCR_TAGGING: "true"
     depends_on:
-      paperless-ollama:
-        condition: service_started
-      paperless:
-        condition: service_healthy
+      - paperless-ollama
+      - paperless
     ports:
       - "3002:8080"
     env_file:
