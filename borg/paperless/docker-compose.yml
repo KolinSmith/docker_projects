@@ -154,7 +154,7 @@ services:
     container_name: paperless-webdav
     restart: unless-stopped
     labels:
-      net.unraid.docker.icon: "https://raw.githubusercontent.com/Qballjos/portainer_templates/master/Images/webdav.png"
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/webdav.png"
     env_file:
       - webdav/.env
     environment:
