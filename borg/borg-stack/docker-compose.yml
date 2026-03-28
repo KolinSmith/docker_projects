@@ -1,0 +1,502 @@
+name: borg
+
+# ============================================================================
+# NETWORKS
+# ============================================================================
+
+networks:
+  # External bridge network shared with NginxProxyManager
+  proxynet:
+    external: true
+
+  # Checkmate internal network (uncomment when enabling checkmate stack)
+  # checkmate:
+  #   name: checkmate
+  #   driver: bridge
+  #   internal: true
+
+# ============================================================================
+# SERVICES
+# ============================================================================
+
+services:
+
+  # ============================================================================
+  # MONITORING & SYSTEM
+  # ============================================================================
+
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    network_mode: host
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/henrygd/beszel/main/internal/site/public/static/icon.png"
+
+    env_file:
+      - /mnt/user/appdata/beszel-agent/beszel-agent.env
+
+    volumes:
+      - /mnt/user/appdata/beszel-agent:/var/lib/beszel-agent
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/host:ro
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+      - SYS_PTRACE
+      - NET_ADMIN
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/selfhosters/unRAID-CA-templates/master/templates/img/dozzle.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8484]/"
+
+    ports:
+      - "8484:8080"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/dozzle/dozzle.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/dozzle:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    security_opt:
+      - no-new-privileges:true
+
+  glances:
+    image: nicolargo/glances
+    container_name: glances
+    restart: unless-stopped
+    network_mode: host
+    pid: host
+
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/glances.png"
+      net.unraid.docker.webui: "http://[IP]:61208/"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/glances/glances.env
+
+    volumes:
+      - /mnt:/mnt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    security_opt:
+      - no-new-privileges:true
+
+  scrutiny:
+    image: ghcr.io/analogj/scrutiny:master-omnibus
+    container_name: scrutiny
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/selfhosters/unRAID-CA-templates/master/templates/img/scrutiny.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8383]/"
+
+    ports:
+      - "8383:8080"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/scrutiny/scrutiny.env
+
+    volumes:
+      - /run/udev:/run/udev:ro
+      - /dev/disk:/dev/disk:ro
+
+    privileged: true
+
+  speedtest-tracker:
+    image: lscr.io/linuxserver/speedtest-tracker
+    container_name: speedtest-tracker
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/speedtest-tracker-logo.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8010]/"
+
+    ports:
+      - "8010:80"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/speedtest-tracker/speedtest-tracker.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/speedtest-tracker:/config
+
+    security_opt:
+      - no-new-privileges:true
+
+  # ============================================================================
+  # MEDIA SERVER
+  # ============================================================================
+
+  binhex-plexpass:
+    image: ghcr.io/binhex/arch-plexpass
+    container_name: binhex-plexpass
+    restart: unless-stopped
+    network_mode: host
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/plex-icon.png"
+      net.unraid.docker.webui: "http://[IP]:32400/web"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/binhex-plexpass/binhex-plexpass.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/binhex-plexpass:/config
+      - /mnt/user/media:/media
+      - /mnt/disks/appdataAndDocker/plexTemp:/transcode_directory
+
+  ErsatzTV:
+    image: jasongdove/ersatztv
+    container_name: ErsatzTV
+    restart: unless-stopped
+    network_mode: host
+
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/ersatztv.png"
+      net.unraid.docker.webui: "http://[IP]:8409/"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/ersatztv/ErsatzTV.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/ersatztv:/config
+      - /mnt/disks/appdataAndDocker/appdata/ersatztv:/root/.local/share/ersatztv
+
+  # ============================================================================
+  # MEDIA AUTOMATION (*ARR STACK)
+  # ============================================================================
+
+  binhex-sonarr:
+    image: binhex/arch-sonarr:latest
+    container_name: binhex-sonarr
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/sonarr-icon.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8989]/"
+
+    ports:
+      - "8989:8989"
+      - "9897:9897"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/binhex-sonarr-v3/binhex-sonarr.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/binhex-sonarr-v3:/config
+      - /mnt/cache/downloads:/data
+      - /mnt/user/media:/media
+
+    security_opt:
+      - no-new-privileges:true
+
+  binhex-radarr:
+    image: binhex/arch-radarr
+    container_name: binhex-radarr
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/radarr-icon.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:7878]/"
+
+    ports:
+      - "7878:7878"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/binhex-radarr/binhex-radarr.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/binhex-radarr:/config
+      - /mnt/user/downloads:/data
+      - /mnt/user/media:/media
+
+    security_opt:
+      - no-new-privileges:true
+
+  binhex-sabnzbd:
+    image: binhex/arch-sabnzbd
+    container_name: binhex-sabnzbd
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/sabnzbd-icon.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8080]/"
+
+    ports:
+      - "8080:8080"
+      - "8090:8090"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/binhex-sabnzbd/binhex-sabnzbd.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/binhex-sabnzbd:/config
+      - /mnt/cache/downloads:/data
+
+    security_opt:
+      - no-new-privileges:true
+
+  binhex-nzbhydra2:
+    image: binhex/arch-nzbhydra2
+    container_name: binhex-nzbhydra2
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nzbhydra2.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:5076]/"
+
+    ports:
+      - "5076:5076"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/binhex-nzbhydra2/binhex-nzbhydra2.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/binhex-nzbhydra2:/config
+      - /mnt/user/downloads:/data
+
+    security_opt:
+      - no-new-privileges:true
+
+  bazarr:
+    image: linuxserver/bazarr
+    container_name: bazarr
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/bazarr-logo.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:6767]/"
+
+    ports:
+      - "6767:6767"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/bazarr/bazarr.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/bazarr:/config
+      - /mnt/user/media/Movies:/movies
+      - /mnt/user/media/TV:/tv
+
+    security_opt:
+      - no-new-privileges:true
+
+  kometa:
+    image: lscr.io/linuxserver/kometa
+    container_name: kometa
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/kometa-logo.png"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/kometa/kometa.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/kometa:/config
+
+    security_opt:
+      - no-new-privileges:true
+
+  # ============================================================================
+  # MEDIA REQUESTS & DISCOVERY
+  # ============================================================================
+
+  overseerr:
+    image: lscr.io/linuxserver/overseerr
+    container_name: overseerr
+    restart: unless-stopped
+
+    networks:
+      - proxynet
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/overseerr-logo.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:5055]/"
+
+    ports:
+      - "5055:5055"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/overseerr/overseerr.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/overseerr:/config
+
+    security_opt:
+      - no-new-privileges:true
+
+  requestrr:
+    image: thomst08/requestrr:latest
+    container_name: requestrr
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/selfhosters/unRAID-CA-templates/master/templates/img/requestrr.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:4545]/"
+
+    ports:
+      - "4545:4545"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/requestrr/requestrr.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/requestrr:/root/config
+
+    security_opt:
+      - no-new-privileges:true
+
+  tautulli:
+    image: lscr.io/linuxserver/tautulli
+    container_name: tautulli
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/tautulli-logo.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8181]/"
+
+    ports:
+      - "8181:8181"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/tautulli/tautulli.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/tautulli:/config
+
+    security_opt:
+      - no-new-privileges:true
+
+  # ============================================================================
+  # REVERSE PROXY & NETWORKING
+  # ============================================================================
+
+  NginxProxyManager:
+    image: jlesage/nginx-proxy-manager
+    container_name: NginxProxyManager
+    restart: unless-stopped
+
+    networks:
+      - proxynet
+
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nginx-proxy-manager.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:7818]/"
+
+    ports:
+      - "1443:4443"
+      - "180:8080"
+      - "7818:8181"
+
+    env_file:
+      - /mnt/disks/appdataAndDocker/appdata/NginxProxyManager/NginxProxyManager.env
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/NginxProxyManager:/config
+
+  # ============================================================================
+  # NOT YET RUNNING — uncomment to enable
+  # ============================================================================
+
+  # huntarr:
+  #   image: hotdari/huntarr:latest
+  #   container_name: huntarr
+  #   restart: unless-stopped
+  #   network_mode: bridge
+  #   labels:
+  #     net.unraid.docker.icon: "https://raw.githubusercontent.com/plexguide/Huntarr.io/main/frontend/static/huntarr.png"
+  #     net.unraid.docker.webui: "http://[IP]:[PORT:9705]/"
+  #   ports:
+  #     - "9705:9705"
+  #   env_file:
+  #     - /mnt/disks/appdataAndDocker/appdata/huntarr/huntarr.env
+  #   volumes:
+  #     - /mnt/disks/appdataAndDocker/appdata/huntarr:/config
+
+  # icloudpd:
+  #   image: boredazfcuk/icloudpd
+  #   container_name: icloudpd
+  #   restart: unless-stopped
+  #   network_mode: bridge
+  #   labels:
+  #     net.unraid.docker.icon: "https://raw.githubusercontent.com/Womabre/-unraid-docker-templates/main/templates/img/icloudpd.png"
+  #   env_file:
+  #     - /mnt/disks/appdataAndDocker/appdata/icloudpd/icloudpd.env
+  #   volumes:
+  #     - /mnt/disks/appdataAndDocker/appdata/icloudpd:/config
+  #     - /mnt/user/media/iCloudPhotos:/home/user/iCloud
+
+  # checkmate:
+  #   image: ghcr.io/binarynate-llc/checkmate-backend-main-multiplatform:latest
+  #   container_name: checkmate
+  #   restart: unless-stopped
+  #   networks:
+  #     - checkmate
+  #   labels:
+  #     net.unraid.docker.icon: "https://raw.githubusercontent.com/bluewave-labs/checkmate/develop/Client/public/images/checkmate-icon.png"
+  #     net.unraid.docker.webui: "http://[IP]:[PORT:52343]/"
+  #   ports:
+  #     - "52343:52343"
+  #   env_file:
+  #     - /mnt/disks/appdataAndDocker/appdata/checkmate/checkmate.env
+  #   depends_on:
+  #     - mongodb_checkmate
+  #     - redis_checkmate
+
+  # mongodb_checkmate:
+  #   image: mongo:latest
+  #   container_name: mongodb_checkmate
+  #   restart: unless-stopped
+  #   networks:
+  #     - checkmate
+  #   labels:
+  #     net.unraid.docker.icon: "https://raw.githubusercontent.com/docker-library/docs/master/mongo/logo.png"
+  #   ports:
+  #     - "27017:27017"
+  #   env_file:
+  #     - /mnt/disks/appdataAndDocker/appdata/mongodb_checkmate/mongodb_checkmate.env
+  #   volumes:
+  #     - /mnt/disks/appdataAndDocker/appdata/mongodb:/data/db
+
+  # redis_checkmate:
+  #   image: redis:latest
+  #   container_name: redis_checkmate
+  #   restart: unless-stopped
+  #   networks:
+  #     - checkmate
+  #   labels:
+  #     net.unraid.docker.icon: "https://raw.githubusercontent.com/juusujanar/unraid-templates/master/img/Redis-logo.png"
+  #   ports:
+  #     - "6379:6379"
+  #   env_file:
+  #     - /mnt/disks/appdataAndDocker/appdata/redis_checkmate/redis_checkmate.env
