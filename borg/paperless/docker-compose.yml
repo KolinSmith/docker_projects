@@ -167,6 +167,24 @@ services:
     volumes:
       - /mnt/user/paperless/consume:/var/lib/dav/data
 
+  # dockhand - Docker management UI with Git integration and auto-deploy
+  dockhand:
+    image: fnsys/dockhand:latest
+    container_name: dockhand
+    restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://dockhand.pro/favicon.ico"
+      net.unraid.docker.webui: "http://[IP]:[PORT:3004]/"
+    environment:
+      TZ: America/Chicago
+    env_file:
+      - dockhand/.env.example
+    ports:
+      - "3004:3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/disks/appdataAndDocker/appdata/dockhand:/app/data
+
   # paperless-gpt - vision OCR and GPT-based metadata suggestions
   paperless-gpt:
     image: icereed/paperless-gpt:latest
