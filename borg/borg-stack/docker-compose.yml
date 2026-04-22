@@ -34,8 +34,9 @@ services:
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/henrygd/beszel/main/internal/site/public/static/icon.png"
 
-    env_file:
-      - /mnt/user/appdata/beszel-agent/beszel-agent.env
+    environment:
+      PORT: 45876
+      KEY: "${BESZEL_AGENT_KEY}"
 
     volumes:
       - /mnt/user/appdata/beszel-agent:/var/lib/beszel-agent
@@ -69,8 +70,8 @@ services:
     ports:
       - "8484:8080"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/dozzle/dozzle.env
+    environment:
+      TZ: ${TZ}
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/dozzle:/data
@@ -87,11 +88,12 @@ services:
     pid: host
 
     labels:
-      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/glances.png"
+      net.unraid.docker.icon: "https://github.com/nicolargo/glances/raw/master/glances/outputs/static/img/glances.png"
       net.unraid.docker.webui: "http://[IP]:61208/"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/glances/glances.env
+    environment:
+      TZ: ${TZ}
+      GLANCES_OPT: "-w"
 
     volumes:
       - /mnt:/mnt
@@ -113,8 +115,8 @@ services:
     ports:
       - "8383:8080"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/scrutiny/scrutiny.env
+    environment:
+      TZ: ${TZ}
 
     volumes:
       - /run/udev:/run/udev:ro
@@ -135,8 +137,17 @@ services:
     ports:
       - "8010:80"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/speedtest-tracker/speedtest-tracker.env
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      UMASK: "022"
+      TZ: ${TZ}
+      APP_KEY: ${SPEEDTEST_APP_KEY}
+      APP_URL: "http://${UNRAID_IP}:8010"
+      DB_CONNECTION: sqlite
+      SPEEDTEST_SCHEDULE: ${SPEEDTEST_SCHEDULE}
+      SPEEDTEST_SERVERS: ${SPEEDTEST_SERVERS}
+      PRUNE_RESULTS_OLDER_THAN: ${SPEEDTEST_PRUNE_RESULTS_OLDER_THAN}
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/speedtest-tracker:/config
@@ -158,12 +169,21 @@ services:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/plex-icon.png"
       net.unraid.docker.webui: "http://[IP]:32400/web"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/binhex-plexpass/binhex-plexpass.env
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      UMASK: "000"
+      TZ: ${TZ}
+      CLAIM_SERVER: "no"
+      PLEX_CLAIM: ""
+      TRANS_DIR: /transcode_directory
+      NVIDIA_VISIBLE_DEVICES: ${NVIDIA_GPU_UUID}
+      NVIDIA_DRIVER_CAPABILITIES: all
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/binhex-plexpass:/config
       - /mnt/user/media:/media
+      - /mnt/user/media-mobile:/media-mobile
       - /mnt/disks/appdataAndDocker/plexTemp:/transcode_directory
 
   ErsatzTV:
@@ -173,11 +193,13 @@ services:
     network_mode: host
 
     labels:
-      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/ersatztv.png"
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/RandomNinjaAtk/unraid-templates/main/randomninjaatk/img/ersatztv.png"
       net.unraid.docker.webui: "http://[IP]:8409/"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/ersatztv/ErsatzTV.env
+    environment:
+      TZ: ${TZ}
+      NVIDIA_VISIBLE_DEVICES: ${NVIDIA_GPU_UUID}
+      NVIDIA_DRIVER_CAPABILITIES: all
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/ersatztv:/config
@@ -192,6 +214,7 @@ services:
     container_name: binhex-sonarr
     restart: unless-stopped
     network_mode: bridge
+    cpuset: "7-10"
 
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/sonarr-icon.png"
@@ -201,8 +224,11 @@ services:
       - "8989:8989"
       - "9897:9897"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/binhex-sonarr-v3/binhex-sonarr.env
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      UMASK: "000"
+      TZ: ${TZ}
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/binhex-sonarr-v3:/config
@@ -225,8 +251,11 @@ services:
     ports:
       - "7878:7878"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/binhex-radarr/binhex-radarr.env
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      UMASK: "000"
+      TZ: ${TZ}
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/binhex-radarr:/config
@@ -241,6 +270,7 @@ services:
     container_name: binhex-sabnzbd
     restart: unless-stopped
     network_mode: bridge
+    cpuset: "11-14"
 
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/sabnzbd-icon.png"
@@ -250,8 +280,11 @@ services:
       - "8080:8080"
       - "8090:8090"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/binhex-sabnzbd/binhex-sabnzbd.env
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      UMASK: "000"
+      TZ: ${TZ}
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/binhex-sabnzbd:/config
@@ -267,14 +300,18 @@ services:
     network_mode: bridge
 
     labels:
-      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nzbhydra2.png"
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/nzbhydra-icon.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:5076]/"
 
     ports:
       - "5076:5076"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/binhex-nzbhydra2/binhex-nzbhydra2.env
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      UMASK: "000"
+      TZ: ${TZ}
+      SHARED_NETWORK: "no"
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/binhex-nzbhydra2:/config
@@ -296,8 +333,10 @@ services:
     ports:
       - "6767:6767"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/bazarr/bazarr.env
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/bazarr:/config
@@ -316,8 +355,16 @@ services:
     labels:
       net.unraid.docker.icon: "https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/kometa-logo.png"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/kometa/kometa.env
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      UMASK: "022"
+      TZ: ${TZ}
+      KOMETA_CONFIG: /config/config.yml
+      KOMETA_TIME: "03:00"
+      KOMETA_RUN: "False"
+      KOMETA_TEST: "False"
+      KOMETA_NO_MISSING: "False"
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/kometa:/config
@@ -344,8 +391,11 @@ services:
     ports:
       - "5055:5055"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/overseerr/overseerr.env
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      UMASK: "022"
+      TZ: ${TZ}
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/overseerr:/config
@@ -366,8 +416,8 @@ services:
     ports:
       - "4545:4545"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/requestrr/requestrr.env
+    environment:
+      TZ: ${TZ}
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/requestrr:/root/config
@@ -388,8 +438,11 @@ services:
     ports:
       - "8181:8181"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/tautulli/tautulli.env
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      UMASK: "022"
+      TZ: ${TZ}
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/tautulli:/config
@@ -410,7 +463,7 @@ services:
       - proxynet
 
     labels:
-      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nginx-proxy-manager.png"
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/icons/nginx-proxy-manager.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:7818]/"
 
     ports:
@@ -418,8 +471,12 @@ services:
       - "180:8080"
       - "7818:8181"
 
-    env_file:
-      - /mnt/disks/appdataAndDocker/appdata/NginxProxyManager/NginxProxyManager.env
+    environment:
+      TZ: ${TZ}
+      USER_ID: ${PUID}
+      GROUP_ID: ${PGID}
+      UMASK: "000"
+      DISABLE_IPV6: "0"
 
     volumes:
       - /mnt/disks/appdataAndDocker/appdata/NginxProxyManager:/config
@@ -438,8 +495,8 @@ services:
   #     net.unraid.docker.webui: "http://[IP]:[PORT:9705]/"
   #   ports:
   #     - "9705:9705"
-  #   env_file:
-  #     - /mnt/disks/appdataAndDocker/appdata/huntarr/huntarr.env
+  #   environment:
+  #     TZ: ${TZ}
   #   volumes:
   #     - /mnt/disks/appdataAndDocker/appdata/huntarr:/config
 
@@ -450,8 +507,15 @@ services:
   #   network_mode: bridge
   #   labels:
   #     net.unraid.docker.icon: "https://raw.githubusercontent.com/Womabre/-unraid-docker-templates/main/templates/img/icloudpd.png"
-  #   env_file:
-  #     - /mnt/disks/appdataAndDocker/appdata/icloudpd/icloudpd.env
+  #   environment:
+  #     TZ: ${TZ}
+  #     PUID: ${PUID}
+  #     PGID: ${PGID}
+  #     UMASK: "000"
+  #     apple_id: ${ICLOUD_APPLE_ID}
+  #     authentication_type: 2FA
+  #     synchronisation_interval: ${ICLOUD_SYNC_INTERVAL:-86400}
+  #     config_file: /config/icloudpd.conf
   #   volumes:
   #     - /mnt/disks/appdataAndDocker/appdata/icloudpd:/config
   #     - /mnt/user/media/iCloudPhotos:/home/user/iCloud
@@ -467,8 +531,16 @@ services:
   #     net.unraid.docker.webui: "http://[IP]:[PORT:52343]/"
   #   ports:
   #     - "52343:52343"
-  #   env_file:
-  #     - /mnt/disks/appdataAndDocker/appdata/checkmate/checkmate.env
+  #   environment:
+  #     TZ: ${TZ}
+  #     CLIENT_HOST: ${CHECKMATE_CLIENT_HOST}
+  #     UPTIME_APP_API_BASE_URL: ${CHECKMATE_UPTIME_APP_API_BASE_URL}
+  #     UPTIME_APP_CLIENT_HOST: ${CHECKMATE_UPTIME_APP_CLIENT_HOST}
+  #     DB_CONNECTION_STRING: ${CHECKMATE_DB_CONNECTION_STRING}
+  #     JWT_SECRET: ${CHECKMATE_JWT_SECRET}
+  #     TOKEN_TTL: ${CHECKMATE_TOKEN_TTL}
+  #     ORIGIN: ${CHECKMATE_ORIGIN}
+  #     REDIS_URL: ${CHECKMATE_REDIS_URL}
   #   depends_on:
   #     - mongodb_checkmate
   #     - redis_checkmate
@@ -483,8 +555,8 @@ services:
   #     net.unraid.docker.icon: "https://raw.githubusercontent.com/docker-library/docs/master/mongo/logo.png"
   #   ports:
   #     - "27017:27017"
-  #   env_file:
-  #     - /mnt/disks/appdataAndDocker/appdata/mongodb_checkmate/mongodb_checkmate.env
+  #   environment:
+  #     TZ: ${TZ}
   #   volumes:
   #     - /mnt/disks/appdataAndDocker/appdata/mongodb:/data/db
 
@@ -498,5 +570,5 @@ services:
   #     net.unraid.docker.icon: "https://raw.githubusercontent.com/juusujanar/unraid-templates/master/img/Redis-logo.png"
   #   ports:
   #     - "6379:6379"
-  #   env_file:
-  #     - /mnt/disks/appdataAndDocker/appdata/redis_checkmate/redis_checkmate.env
+  #   environment:
+  #     TZ: ${TZ}
