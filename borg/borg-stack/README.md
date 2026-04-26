@@ -35,6 +35,7 @@ Full Docker Compose stack for the Borg Unraid server. Covers media management, m
 | Container | Image | Port | Description |
 |-----------|-------|------|-------------|
 | `beszel-agent` | henrygd/beszel-agent | 45876 (host) | System metrics agent for Beszel monitoring hub. |
+| `dockhand` | fnsys/dockhand | 3004 | Docker management UI. Manages containers on Borg and remote hosts (Voyager via Hawser edge agent). |
 | `scrutiny` | analogj/scrutiny:master-omnibus | 8383 | Disk S.M.A.R.T. monitoring. |
 | `glances` | nicolargo/glances | 61208 (host) | Real-time system resource monitoring. |
 | `dozzle` | amir20/dozzle | 8084 | Docker container log viewer. |
