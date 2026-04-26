@@ -155,6 +155,29 @@ services:
     security_opt:
       - no-new-privileges:true
 
+  dockhand:
+    image: fnsys/dockhand:latest
+    container_name: dockhand
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://dockhand.pro/favicon.ico"
+      net.unraid.docker.webui: "http://[IP]:[PORT:3004]/"
+
+    ports:
+      - "3004:3000"
+
+    environment:
+      TZ: ${TZ}
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/disks/appdataAndDocker/appdata/dockhand:/app/data
+
+    security_opt:
+      - no-new-privileges:true
+
   # ============================================================================
   # MEDIA SERVER
   # ============================================================================
