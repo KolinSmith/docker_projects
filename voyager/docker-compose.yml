@@ -1,4 +1,16 @@
 services:
+
+  hawser:
+    image: ghcr.io/finsys/hawser:latest
+    container_name: hawser
+    restart: unless-stopped
+    environment:
+      DOCKHAND_SERVER_URL: "ws://192.168.9.7:3004/api/hawser/connect"
+      TOKEN: ${HAWSER_TOKEN}
+      AGENT_NAME: "Voyager"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
   beszel:
     image: henrygd/beszel:latest
     container_name: beszel-hub
