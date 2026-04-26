@@ -7,7 +7,7 @@ services:
     environment:
       DOCKHAND_SERVER_URL: "ws://192.168.9.7:3004/api/hawser/connect"
       TOKEN: ${HAWSER_TOKEN}
-      AGENT_NAME: "Voyager"
+      AGENT_NAME: "Voyager (Dockhand)"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
