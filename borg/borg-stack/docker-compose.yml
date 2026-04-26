@@ -162,7 +162,7 @@ services:
     network_mode: bridge
 
     labels:
-      net.unraid.docker.icon: "https://dockhand.pro/favicon.ico"
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/dockhand.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:3004]/"
 
     ports:
