@@ -32,7 +32,7 @@ jobs:
       image: cgr.dev/chainguard/wolfi-base:latest
     steps:
       - name: Install dependencies
-        run: apk add --no-cache curl git
+        run: apk add --no-cache curl git nodejs
 
       - name: Checkout
         uses: actions/checkout@v4
