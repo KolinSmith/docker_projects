@@ -111,7 +111,6 @@ services:
       net.unraid.docker.webui: "http://[IP]:[PORT:11434]/"
     environment:
       TZ: America/Chicago
-      OLLAMA_KEEP_ALIVE: "0"
     env_file:
       - /mnt/disks/appdataAndDocker/appdata/paperless-ollama/ollama.env
     volumes:
