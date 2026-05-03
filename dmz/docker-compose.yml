@@ -766,4 +766,4 @@ networks:
     external: true
 
 volumes:
-  searxng-valkey-data:
+  searxng-valkey-data
