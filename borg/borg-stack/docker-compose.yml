@@ -155,6 +155,25 @@ services:
     security_opt:
       - no-new-privileges:true
 
+  it-tools:
+    image: corentinth/it-tools:latest
+    container_name: it-tools
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/it-tools.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8765]/"
+
+    ports:
+      - "8765:80"
+
+    environment:
+      TZ: ${TZ}
+
+    security_opt:
+      - no-new-privileges:true
+
   dockhand:
     image: fnsys/dockhand:latest
     container_name: dockhand
