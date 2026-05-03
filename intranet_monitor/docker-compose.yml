@@ -18,7 +18,7 @@ services:
       driver: "json-file"
       options:
         max-size: "1m"
-   
+
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -113,7 +113,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    ports: 
+    ports:
       - 9090:8080
     restart: unless-stopped
     networks:
