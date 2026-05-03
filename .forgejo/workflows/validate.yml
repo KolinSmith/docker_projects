@@ -1,0 +1,40 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  yaml-lint:
+    name: Lint docker-compose files
+    runs-on: linux
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip3 install yamllint --quiet
+
+      - name: Lint all docker-compose.yml files
+        run: |
+          find . -name "docker-compose.yml" | sort | while read f; do
+            echo "Checking $f..."
+            yamllint -d '{extends: default, rules: {line-length: disable, comments: disable, truthy: disable}}' "$f" || exit 1
+          done
+          echo "All compose files passed."
+
+  secrets-scan:
+    name: Scan for secrets
+    runs-on: linux
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/repo" \
+            ghcr.io/gitleaks/gitleaks:latest \
+            detect --source /repo --verbose --no-git
