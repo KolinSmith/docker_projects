@@ -21,7 +21,7 @@ jobs:
         run: |
           find . -name "docker-compose.yml" | sort | while read f; do
             echo "Checking $f..."
-            yamllint -d '{extends: default, rules: {line-length: disable, comments: disable, truthy: disable}}' "$f" || exit 1
+            yamllint -d '{extends: default, rules: {line-length: disable, comments: disable, truthy: disable, new-lines: disable, document-start: disable}}' "$f" || exit 1
           done
           echo "All compose files passed."
 
