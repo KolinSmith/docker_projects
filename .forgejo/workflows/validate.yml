@@ -21,12 +21,27 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Lint all docker-compose.yml files
+        id: lint
         run: |
-          find . -name "docker-compose.yml" | sort | while read f; do
+          output=$(find . -name "docker-compose.yml" | sort | while read f; do
             echo "Checking $f..."
-            yamllint -d '{extends: default, rules: {line-length: disable, comments: disable, truthy: disable, new-lines: disable, document-start: disable}}' "$f" || exit 1
-          done
-          echo "All compose files passed."
+            yamllint -d '{extends: default, rules: {line-length: disable, comments: disable, truthy: disable, new-lines: disable, document-start: disable}}' "$f" 2>&1 || true
+          done)
+          echo "$output"
+          if echo "$output" | grep -q "error"; then
+            echo "LINT_OUTPUT<<EOF" >> $GITHUB_OUTPUT
+            echo "$output" | grep "error" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Comment on PR (lint failure)
+        if: failure() && github.event_name == 'pull_request'
+        run: |
+          curl -s -X POST "${{ github.api_url }}/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"body\":\"❌ **yaml-lint failed**\n\`\`\`\n${{ steps.lint.outputs.LINT_OUTPUT }}\n\`\`\`\"}"
 
   secrets-scan:
     name: Scan for secrets
@@ -43,4 +58,20 @@ jobs:
           fetch-depth: 0
 
       - name: Scan for secrets
-        run: gitleaks detect --source . --verbose --no-git
+        id: scan
+        run: |
+          output=$(gitleaks detect --source . --no-git 2>&1) || {
+            echo "$output"
+            echo "SCAN_OUTPUT<<EOF" >> $GITHUB_OUTPUT
+            echo "$output" | grep -E "Finding:|File:|RuleID:" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            exit 1
+          }
+
+      - name: Comment on PR (secrets failure)
+        if: failure() && github.event_name == 'pull_request'
+        run: |
+          curl -s -X POST "${{ github.api_url }}/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"body\":\"🔐 **Secrets scan failed — potential secrets detected:**\n\`\`\`\n${{ steps.scan.outputs.SCAN_OUTPUT }}\n\`\`\`\"}"
