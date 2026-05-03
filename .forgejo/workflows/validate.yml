@@ -8,14 +8,12 @@ jobs:
   yaml-lint:
     name: Lint docker-compose files
     runs-on: linux
-    container:
-      image: python:3.12-slim
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install yamllint
-        run: pip install yamllint --quiet
+        run: sudo apt-get install -y -q yamllint
 
       - name: Lint all docker-compose.yml files
         run: |
