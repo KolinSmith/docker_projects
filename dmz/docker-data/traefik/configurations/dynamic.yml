@@ -1,4 +1,19 @@
 http:
+  routers:
+    it-tools:
+      entryPoints:
+        - websecure
+      rule: "Host(`tools.hiddenba.se`)"
+      service: it-tools
+      tls:
+        certResolver: cloudflare
+
+  services:
+    it-tools:
+      loadBalancer:
+        servers:
+          - url: "http://100.72.103.67:8765"
+
   middlewares:
     secureHeaders:
       headers:
