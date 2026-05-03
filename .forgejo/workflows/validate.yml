@@ -9,13 +9,13 @@ jobs:
     name: Lint docker-compose files
     runs-on: linux
     container:
-      image: node:22-bookworm
+      image: cgr.dev/chainguard/wolfi-base:latest
     steps:
+      - name: Install dependencies
+        run: apk add --no-cache nodejs yamllint git
+
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install yamllint
-        run: apt-get install -y -q python3-yamllint
 
       - name: Lint all docker-compose.yml files
         run: |
@@ -28,15 +28,21 @@ jobs:
   secrets-scan:
     name: Scan for secrets
     runs-on: linux
+    container:
+      image: cgr.dev/chainguard/wolfi-base:latest
     steps:
+      - name: Install dependencies
+        run: apk add --no-cache curl git
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Run Gitleaks
+      - name: Install gitleaks
         run: |
-          docker run --rm \
-            -v "${{ github.workspace }}:/repo" \
-            ghcr.io/gitleaks/gitleaks:latest \
-            detect --source /repo --verbose --no-git
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_linux_arm64.tar.gz \
+            | tar -xz -C /usr/local/bin gitleaks
+
+      - name: Scan for secrets
+        run: gitleaks detect --source . --verbose --no-git
