@@ -32,18 +32,12 @@ jobs:
       image: cgr.dev/chainguard/wolfi-base:latest
     steps:
       - name: Install dependencies
-        run: apk add --no-cache curl git nodejs
+        run: apk add --no-cache git nodejs gitleaks
 
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Install gitleaks
-        run: |
-          mkdir -p /usr/local/bin
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_linux_arm64.tar.gz \
-            | tar -xz -C /usr/local/bin gitleaks
 
       - name: Scan for secrets
         run: gitleaks detect --source . --verbose --no-git
