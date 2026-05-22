@@ -232,6 +232,7 @@ services:
     image: jasongdove/ersatztv
     container_name: ErsatzTV
     restart: unless-stopped
+    runtime: nvidia
     network_mode: host
 
     labels:
@@ -242,9 +243,12 @@ services:
       TZ: ${TZ}
       NVIDIA_VISIBLE_DEVICES: ${NVIDIA_GPU_UUID}
       NVIDIA_DRIVER_CAPABILITIES: all
+      # /usr/lib64 contains the current driver's libcuda.so.1 (595.xx).
+      # Without this, the image's default LD_LIBRARY_PATH finds the stale 580.xx
+      # version in /usr/lib/x86_64-linux-gnu first, causing NVENC to fail.
+      LD_LIBRARY_PATH: /usr/lib64:/usr/local/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu
 
     volumes:
-      - /mnt/disks/appdataAndDocker/appdata/ersatztv:/config
       - /mnt/disks/appdataAndDocker/appdata/ersatztv:/root/.local/share/ersatztv
 
   # ============================================================================
