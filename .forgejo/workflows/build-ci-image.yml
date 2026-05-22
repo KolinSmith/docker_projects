@@ -1,0 +1,28 @@
+name: Build CI image
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'ci-images/ci-tools/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and push ci-tools image
+    runs-on: linux
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and push
+        env:
+          FORGEJO_USER: ${{ secrets.FORGEJO_USER }}
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+        run: |
+          echo "${FORGEJO_TOKEN}" | docker login git.hiddenba.se \
+            -u "${FORGEJO_USER}" --password-stdin
+          docker build -t git.hiddenba.se/dax/ci-tools:latest \
+            ci-images/ci-tools/
+          docker push git.hiddenba.se/dax/ci-tools:latest
+          echo "Image pushed: git.hiddenba.se/dax/ci-tools:latest"
