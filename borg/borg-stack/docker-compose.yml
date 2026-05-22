@@ -232,6 +232,7 @@ services:
     image: jasongdove/ersatztv
     container_name: ErsatzTV
     restart: unless-stopped
+    runtime: nvidia
     network_mode: host
 
     labels:
