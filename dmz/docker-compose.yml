@@ -345,6 +345,11 @@ services:
       - /etc/localtime:/etc/localtime:ro
     ports:
       - "222:22"
+      # Tailscale-only direct access for container registry pushes.
+      # Traefik returns 413 on large blob uploads; this bypasses it.
+      # 100.86.4.29 is the Tailscale IP — not reachable from the public internet.
+      # Port 3000 is taken by BentoPDF, so we use 3001.
+      - "100.86.4.29:3001:3000"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"

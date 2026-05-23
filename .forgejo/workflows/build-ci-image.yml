@@ -20,9 +20,12 @@ jobs:
           FORGEJO_USER: ${{ secrets.FORGEJO_USER }}
           FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
         run: |
-          echo "${FORGEJO_TOKEN}" | docker login git.hiddenba.se \
+          # Push via Tailscale direct endpoint (100.86.4.29:3001) to bypass Traefik.
+          # Traefik returns 413 on large blob uploads; Forgejo accepts them fine directly.
+          # The runner (Orange Pi) reaches the DMZ via Tailscale — not public internet.
+          echo "${FORGEJO_TOKEN}" | docker login 100.86.4.29:3001 \
             -u "${FORGEJO_USER}" --password-stdin
-          docker build -t git.hiddenba.se/dax/ci-tools:latest \
+          docker build -t 100.86.4.29:3001/dax/ci-tools:latest \
             ci-images/ci-tools/
-          docker push git.hiddenba.se/dax/ci-tools:latest
-          echo "Image pushed: git.hiddenba.se/dax/ci-tools:latest"
+          docker push 100.86.4.29:3001/dax/ci-tools:latest
+          echo "Image pushed to Forgejo registry via Tailscale direct endpoint"
