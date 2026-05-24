@@ -9,11 +9,8 @@ jobs:
     name: Lint YAML
     runs-on: linux
     container:
-      image: cgr.dev/chainguard/wolfi-base:latest
+      image: 100.86.4.29:3001/dax/ci-tools:latest
     steps:
-      - name: Install dependencies
-        run: apk add --no-cache yamllint git nodejs
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -50,14 +47,8 @@ jobs:
     name: Checkov IaC scan
     runs-on: linux
     container:
-      image: cgr.dev/chainguard/wolfi-base:latest
+      image: 100.86.4.29:3001/dax/ci-tools:latest
     steps:
-      - name: Install dependencies
-        run: apk add --no-cache python-3 py3-pip git nodejs
-
-      - name: Install checkov
-        run: pip install --quiet --root-user-action=ignore checkov
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -78,11 +69,8 @@ jobs:
     name: Scan for secrets
     runs-on: linux
     container:
-      image: cgr.dev/chainguard/wolfi-base:latest
+      image: 100.86.4.29:3001/dax/ci-tools:latest
     steps:
-      - name: Install dependencies
-        run: apk add --no-cache git nodejs gitleaks
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -100,18 +88,8 @@ jobs:
     runs-on: linux
     continue-on-error: true
     container:
-      image: cgr.dev/chainguard/wolfi-base:latest
+      image: 100.86.4.29:3001/dax/ci-tools:latest
     steps:
-      - name: Install dependencies
-        run: apk add --no-cache python-3 git nodejs wget
-
-      - name: Install scc
-        run: |
-          wget -qO /tmp/scc.tar.gz \
-            https://github.com/boyter/scc/releases/download/v3.3.4/scc_Linux_arm64.tar.gz
-          tar -xzf /tmp/scc.tar.gz -C /tmp scc
-          install -m 755 /tmp/scc /usr/bin/scc
-
       - name: Checkout
         uses: actions/checkout@v4
 
