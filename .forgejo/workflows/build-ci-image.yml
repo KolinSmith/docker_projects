@@ -13,29 +13,20 @@ jobs:
     name: Build and push ci-tools image
     runs-on: linux
     container:
-      image: gcr.io/kaniko-project/executor:debug
+      image: 100.86.4.29:3001/dax/ci-tools:latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure registry auth
+      - name: Build and push
         env:
           FORGEJO_USER: ${{ secrets.FORGEJO_USER }}
           FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
         run: |
-          mkdir -p /kaniko/.docker
-          printf '{"auths":{"100.86.4.29:3001":{"auth":"%s"}}}' \
-            "$(printf '%s:%s' "${FORGEJO_USER}" "${FORGEJO_TOKEN}" | base64 -w 0)" \
-            > /kaniko/.docker/config.json
-
-      - name: Build and push with kaniko
-        run: |
+          # Docker socket is provided via runner automount (docker_host: automount in runner config).
           # Push via Tailscale direct endpoint to bypass Traefik.
-          # Traefik returns 413 on large blob uploads; kaniko pushes directly to Forgejo.
-          # The runner (Orange Pi) reaches the DMZ via Tailscale — not public internet.
-          /kaniko/executor \
-            --context=dir:///github/workspace/ci-images/ci-tools \
-            --dockerfile=ci-images/ci-tools/Dockerfile \
-            --destination=100.86.4.29:3001/dax/ci-tools:latest \
-            --insecure \
-            --skip-tls-verify \
-            --cache=false
+          # Traefik returns 413 on large blob uploads; Forgejo accepts them fine directly.
+          echo "${FORGEJO_TOKEN}" | docker login 100.86.4.29:3001 \
+            -u "${FORGEJO_USER}" --password-stdin
+          docker build -t 100.86.4.29:3001/dax/ci-tools:latest \
+            ci-images/ci-tools/
+          docker push 100.86.4.29:3001/dax/ci-tools:latest

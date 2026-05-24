@@ -42,7 +42,7 @@ services:
   forgejo-runner:
     image: code.forgejo.org/forgejo/runner:12.6.3
     container_name: forgejo-runner
-    command: /bin/forgejo-runner daemon
+    command: /bin/forgejo-runner daemon --config /etc/forgejo-runner/config.yml
     restart: unless-stopped
     user: "1000:999"  # UID matches image default (owns /data), GID 999 = docker group for socket access
     tty: false
