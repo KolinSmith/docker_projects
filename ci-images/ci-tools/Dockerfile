@@ -9,7 +9,8 @@ RUN apk add --no-cache \
     py3-pip \
     gitleaks \
     wget \
-    docker-cli
+    docker-cli \
+    docker-buildx
 
 # Pip packages
 # --root-user-action=ignore required; manylinux wheels don't work on musl
