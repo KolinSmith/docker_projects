@@ -15,7 +15,7 @@ jobs:
     name: Build and push ci-tools image
     runs-on: linux
     container:
-      image: 100.86.4.29:3001/dax/ci-tools:latest
+      image: 100.86.4.29:3001/dax/docker_projects/ci-tools:latest
     steps:
       - uses: actions/checkout@v4
 
@@ -27,7 +27,7 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           SHA: ${{ github.sha }}
         run: |
-          REGISTRY=100.86.4.29:3001/dax/ci-tools
+          REGISTRY=100.86.4.29:3001/dax/docker_projects/ci-tools
           SHA_SHORT=$(echo "$SHA" | cut -c1-7)
 
           echo "${FORGEJO_TOKEN}" | docker login 100.86.4.29:3001 \
@@ -36,12 +36,12 @@ jobs:
           # Always tag :latest and :sha-XXXXXXX
           TAGS="-t ${REGISTRY}:latest -t ${REGISTRY}:sha-${SHA_SHORT}"
 
-          # On semver tag push (v1.2.3), also tag :v1.2.3, :1.2.3, :1.2, :1
+          # On semver tag push (v1.2.3), also tag :vX.Y.Z, :X.Y.Z, :X.Y, :X
           if echo "$REF" | grep -q '^refs/tags/v'; then
-            V="${REF_NAME}"          # v1.2.3
-            V_NOPREFIX="${V#v}"      # 1.2.3
-            MINOR="${V_NOPREFIX%.*}" # 1.2
-            MAJOR="${MINOR%.*}"      # 1
+            V="${REF_NAME}"
+            V_NOPREFIX="${V#v}"
+            MINOR="${V_NOPREFIX%.*}"
+            MAJOR="${MINOR%.*}"
             TAGS="$TAGS -t ${REGISTRY}:${V} -t ${REGISTRY}:${V_NOPREFIX} -t ${REGISTRY}:${MINOR} -t ${REGISTRY}:${MAJOR}"
           fi
 
