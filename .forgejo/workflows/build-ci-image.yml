@@ -6,6 +6,8 @@ on:
       - master
     paths:
       - 'ci-images/ci-tools/**'
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
 
 jobs:
@@ -21,12 +23,36 @@ jobs:
         env:
           FORGEJO_USER: ${{ secrets.FORGEJO_USER }}
           FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          REF: ${{ github.ref }}
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
         run: |
-          # Docker socket is provided via runner automount (docker_host: automount in runner config).
-          # Push via Tailscale direct endpoint to bypass Traefik.
-          # Traefik returns 413 on large blob uploads; Forgejo accepts them fine directly.
+          REGISTRY=100.86.4.29:3001/dax/ci-tools
+          SHA_SHORT=$(echo "$SHA" | cut -c1-7)
+
           echo "${FORGEJO_TOKEN}" | docker login 100.86.4.29:3001 \
             -u "${FORGEJO_USER}" --password-stdin
-          docker build -t 100.86.4.29:3001/dax/ci-tools:latest \
-            ci-images/ci-tools/
-          docker push 100.86.4.29:3001/dax/ci-tools:latest
+
+          # Always tag :latest and :sha-XXXXXXX
+          TAGS="-t ${REGISTRY}:latest -t ${REGISTRY}:sha-${SHA_SHORT}"
+
+          # On semver tag push (v1.2.3), also tag :v1.2.3, :1.2.3, :1.2, :1
+          if echo "$REF" | grep -q '^refs/tags/v'; then
+            V="${REF_NAME}"          # v1.2.3
+            V_NOPREFIX="${V#v}"      # 1.2.3
+            MINOR="${V_NOPREFIX%.*}" # 1.2
+            MAJOR="${MINOR%.*}"      # 1
+            TAGS="$TAGS -t ${REGISTRY}:${V} -t ${REGISTRY}:${V_NOPREFIX} -t ${REGISTRY}:${MINOR} -t ${REGISTRY}:${MAJOR}"
+          fi
+
+          docker build $TAGS ci-images/ci-tools/
+
+          docker push ${REGISTRY}:latest
+          docker push ${REGISTRY}:sha-${SHA_SHORT}
+
+          if echo "$REF" | grep -q '^refs/tags/v'; then
+            docker push ${REGISTRY}:${V}
+            docker push ${REGISTRY}:${V_NOPREFIX}
+            docker push ${REGISTRY}:${MINOR}
+            docker push ${REGISTRY}:${MAJOR}
+          fi
