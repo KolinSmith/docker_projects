@@ -1,3 +1,5 @@
+# ARM64-only: ruff, shellcheck, and scc are installed from hardcoded aarch64 binaries below.
+# To support amd64, replace those wget URLs with the corresponding x86_64 releases.
 FROM cgr.dev/chainguard/wolfi-base:latest
 
 # Base packages + tools available in wolfi apk
