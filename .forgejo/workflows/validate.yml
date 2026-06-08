@@ -9,7 +9,7 @@ jobs:
     name: Lint YAML
     runs-on: linux
     container:
-      image: 100.86.4.29:3001/dax/ci-tools:latest
+      image: 100.86.4.29:3001/dax/docker_projects/ci-tools:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,7 +47,7 @@ jobs:
     name: Checkov IaC scan
     runs-on: linux
     container:
-      image: 100.86.4.29:3001/dax/ci-tools:latest
+      image: 100.86.4.29:3001/dax/docker_projects/ci-tools:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,7 +69,7 @@ jobs:
     name: Scan for secrets
     runs-on: linux
     container:
-      image: 100.86.4.29:3001/dax/ci-tools:latest
+      image: 100.86.4.29:3001/dax/docker_projects/ci-tools:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -88,7 +88,7 @@ jobs:
     runs-on: linux
     continue-on-error: true
     container:
-      image: 100.86.4.29:3001/dax/ci-tools:latest
+      image: 100.86.4.29:3001/dax/docker_projects/ci-tools:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4

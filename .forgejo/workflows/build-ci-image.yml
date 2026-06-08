@@ -6,6 +6,8 @@ on:
       - master
     paths:
       - 'ci-images/ci-tools/**'
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
 
 jobs:
@@ -13,20 +15,46 @@ jobs:
     name: Build and push ci-tools image
     runs-on: linux
     container:
-      image: 100.86.4.29:3001/dax/ci-tools:latest
+      image: cgr.dev/chainguard/wolfi-base:latest
     steps:
+      - name: Install dependencies
+        run: apk add --no-cache docker-cli docker-cli-buildx git nodejs
+
       - uses: actions/checkout@v4
 
       - name: Build and push
         env:
           FORGEJO_USER: ${{ secrets.FORGEJO_USER }}
           FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          REF: ${{ github.ref }}
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
         run: |
-          # Docker socket is provided via runner automount (docker_host: automount in runner config).
-          # Push via Tailscale direct endpoint to bypass Traefik.
-          # Traefik returns 413 on large blob uploads; Forgejo accepts them fine directly.
+          REGISTRY=100.86.4.29:3001/dax/docker_projects/ci-tools
+          SHA_SHORT=$(echo "$SHA" | cut -c1-7)
+
           echo "${FORGEJO_TOKEN}" | docker login 100.86.4.29:3001 \
             -u "${FORGEJO_USER}" --password-stdin
-          docker build -t 100.86.4.29:3001/dax/ci-tools:latest \
-            ci-images/ci-tools/
-          docker push 100.86.4.29:3001/dax/ci-tools:latest
+
+          # Always tag :latest and :sha-XXXXXXX
+          TAGS="-t ${REGISTRY}:latest -t ${REGISTRY}:sha-${SHA_SHORT}"
+
+          # On semver tag push (v1.2.3), also tag :vX.Y.Z, :X.Y.Z, :X.Y, :X
+          if echo "$REF" | grep -q '^refs/tags/v'; then
+            V="${REF_NAME}"
+            V_NOPREFIX="${V#v}"
+            MINOR="${V_NOPREFIX%.*}"
+            MAJOR="${MINOR%.*}"
+            TAGS="$TAGS -t ${REGISTRY}:${V} -t ${REGISTRY}:${V_NOPREFIX} -t ${REGISTRY}:${MINOR} -t ${REGISTRY}:${MAJOR}"
+          fi
+
+          docker buildx build --push $TAGS ci-images/ci-tools/
+
+          if echo "$REF" | grep -q '^refs/tags/v'; then
+            docker buildx build --push \
+              -t ${REGISTRY}:${V} \
+              -t ${REGISTRY}:${V_NOPREFIX} \
+              -t ${REGISTRY}:${MINOR} \
+              -t ${REGISTRY}:${MAJOR} \
+              ci-images/ci-tools/
+          fi
