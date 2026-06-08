@@ -15,8 +15,11 @@ jobs:
     name: Build and push ci-tools image
     runs-on: linux
     container:
-      image: 100.86.4.29:3001/dax/docker_projects/ci-tools:latest
+      image: cgr.dev/chainguard/wolfi-base:latest
     steps:
+      - name: Install docker-cli
+        run: apk add --no-cache docker-cli git
+
       - uses: actions/checkout@v4
 
       - name: Build and push
