@@ -18,7 +18,7 @@ jobs:
       image: cgr.dev/chainguard/wolfi-base:latest
     steps:
       - name: Install dependencies
-        run: apk add --no-cache docker-cli git nodejs
+        run: apk add --no-cache docker-cli docker-cli-buildx git nodejs
 
       - uses: actions/checkout@v4
 
@@ -48,14 +48,13 @@ jobs:
             TAGS="$TAGS -t ${REGISTRY}:${V} -t ${REGISTRY}:${V_NOPREFIX} -t ${REGISTRY}:${MINOR} -t ${REGISTRY}:${MAJOR}"
           fi
 
-          docker build $TAGS ci-images/ci-tools/
-
-          docker push ${REGISTRY}:latest
-          docker push ${REGISTRY}:sha-${SHA_SHORT}
+          docker buildx build --push $TAGS ci-images/ci-tools/
 
           if echo "$REF" | grep -q '^refs/tags/v'; then
-            docker push ${REGISTRY}:${V}
-            docker push ${REGISTRY}:${V_NOPREFIX}
-            docker push ${REGISTRY}:${MINOR}
-            docker push ${REGISTRY}:${MAJOR}
+            docker buildx build --push \
+              -t ${REGISTRY}:${V} \
+              -t ${REGISTRY}:${V_NOPREFIX} \
+              -t ${REGISTRY}:${MINOR} \
+              -t ${REGISTRY}:${MAJOR} \
+              ci-images/ci-tools/
           fi
