@@ -17,8 +17,8 @@ jobs:
     container:
       image: cgr.dev/chainguard/wolfi-base:latest
     steps:
-      - name: Install docker-cli
-        run: apk add --no-cache docker-cli git
+      - name: Install dependencies
+        run: apk add --no-cache docker-cli git nodejs
 
       - uses: actions/checkout@v4
 
