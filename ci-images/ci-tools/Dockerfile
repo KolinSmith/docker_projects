@@ -2,6 +2,8 @@
 # To support amd64, replace those wget URLs with the corresponding x86_64 releases.
 FROM cgr.dev/chainguard/wolfi-base:latest
 
+LABEL org.opencontainers.image.source=https://git.hiddenba.se/dax/docker_projects
+
 # Base packages + tools available in wolfi apk
 RUN apk add --no-cache \
     git \
