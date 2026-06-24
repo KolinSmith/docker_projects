@@ -52,6 +52,7 @@ services:
       - "${TOR_DIR_PORT:-8444}:8444"  # DirPort
     volumes:
       - ./torrc:/etc/tor/torrc:ro
+      - ./nyxrc:/.nyx/config:ro
       - tor_data:/var/lib/tor
       - tor_logs:/var/log/tor
     env_file:
