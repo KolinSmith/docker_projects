@@ -61,6 +61,7 @@ services:
       - runner_data:/data
       - /var/run/docker.sock:/var/run/docker.sock
       - runner_config:/etc/forgejo-runner
+      - /home/dax/.docker/config.json:/data/.docker/config.json:ro
     security_opt:
       - no-new-privileges:true
     cap_drop:
