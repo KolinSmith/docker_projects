@@ -41,7 +41,7 @@ services:
         max-file: "1"
 
   tor-relay:
-    image: ghcr.io/kolinsmith/tor-relay-docker:latest
+    image: nilok3/tor-relay-docker:latest
     container_name: tor-relay
     restart: unless-stopped
     user: "108:113"  # debian-tor user (from tor-relay-docker image)
