@@ -101,7 +101,7 @@ jobs:
           GH_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
-          API_BASE: ${{ github.server_url }}/api/v1
+          API_BASE: ${{ secrets.FORGEJO_API_URL }}
         run: |
           python3 << 'PYEOF'
           import json, os, sys, urllib.request, urllib.error
@@ -117,9 +117,6 @@ jobs:
           repo  = os.environ["REPO"]
           pr    = os.environ["PR_NUMBER"]
           hdrs  = {"Authorization": f"token {token}", "Content-Type": "application/json"}
-
-          import hashlib
-          print(f"DEBUG token length={len(token)} sha256[:8]={hashlib.sha256(token.encode()).hexdigest()[:8]}")
 
           def req(method, url, data=None):
               r = urllib.request.Request(url, data=data, headers=hdrs, method=method)
