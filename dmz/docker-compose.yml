@@ -727,6 +727,49 @@ services:
 
 ####################################################################################################
 
+  landing:
+    image: nginx:alpine
+    container_name: landing
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    networks:
+      - proxy
+    volumes:
+      - ./landing:/usr/share/nginx/html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.landing-hiddendomain.entrypoints=websecure"
+      - "traefik.http.routers.landing-hiddendomain.rule=Host(`${HIDDEN_DOMAIN}`)"
+      - "traefik.http.routers.landing-hiddendomain.tls.certresolver=cloudflare"
+      - "traefik.http.routers.landing-hiddendomain.service=landing-service"
+      - "traefik.http.services.landing-service.loadbalancer.server.port=80"
+    deploy:
+      resources:
+        limits:
+          memory: 32M
+        reservations:
+          memory: 16M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "2"
+
+####################################################################################################
+
   beszel-socket-proxy:
     image: lscr.io/linuxserver/socket-proxy:latest
     container_name: beszel-socket-proxy
