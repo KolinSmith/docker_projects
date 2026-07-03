@@ -339,6 +339,30 @@ services:
     security_opt:
       - no-new-privileges:true
 
+  houndarr:
+    image: ghcr.io/av1155/houndarr:latest
+    container_name: houndarr
+    restart: unless-stopped
+    network_mode: bridge
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/av1155/houndarr/main/src/houndarr/static/img/houndarr-logo-dark.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8877]/"
+
+    ports:
+      - "8877:8877"
+
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/houndarr:/data
+
+    security_opt:
+      - no-new-privileges:true
+
   binhex-sabnzbd:
     image: binhex/arch-sabnzbd
     container_name: binhex-sabnzbd
