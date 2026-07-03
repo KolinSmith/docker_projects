@@ -1,18 +1,38 @@
 services:
+  beszel-socket-proxy:
+    image: lscr.io/linuxserver/socket-proxy:latest
+    container_name: beszel-socket-proxy
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /run
+    ports:
+      - "127.0.0.1:2375:2375"
+    environment:
+      CONTAINERS: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
   beszel-agent:
     image: henrygd/beszel-agent:latest
     container_name: beszel-agent
     restart: unless-stopped
-    user: "0:0"  # Must run as root for system monitoring
+    user: "1000:1000"
     tty: false
     stdin_open: false
     network_mode: host
+    depends_on:
+      - beszel-socket-proxy
     environment:
       PORT: 45876
       KEY: "${BESZEL_AGENT_KEY}"
+      DOCKER_HOST: tcp://127.0.0.1:2375
     volumes:
       - ./beszel_agent_data:/var/lib/beszel-agent
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /:/host:ro
     security_opt:
       - no-new-privileges:true
