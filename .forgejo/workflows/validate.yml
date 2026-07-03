@@ -118,6 +118,9 @@ jobs:
           pr    = os.environ["PR_NUMBER"]
           hdrs  = {"Authorization": f"token {token}", "Content-Type": "application/json"}
 
+          import hashlib
+          print(f"DEBUG token length={len(token)} sha256[:8]={hashlib.sha256(token.encode()).hexdigest()[:8]}")
+
           def req(method, url, data=None):
               r = urllib.request.Request(url, data=data, headers=hdrs, method=method)
               try:
