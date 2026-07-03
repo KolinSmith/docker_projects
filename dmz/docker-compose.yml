@@ -23,10 +23,10 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/ubuntu/docker-data/traefik/data/traefik.yml:/traefik.yml:ro
-      - /home/ubuntu/docker-data/traefik/data/acme.json:/acme.json
-      - /home/ubuntu/docker-data/traefik/data/acme.json:/acme-cloudflare.json
-      - /home/ubuntu/docker-data/traefik/data/configurations:/configurations
+      - ${HOME}/docker-data/traefik/data/traefik.yml:/traefik.yml:ro
+      - ${HOME}/docker-data/traefik/data/acme.json:/acme.json
+      - ${HOME}/docker-data/traefik/data/acme.json:/acme-cloudflare.json
+      - ${HOME}/docker-data/traefik/data/configurations:/configurations
     labels:
       # Dashboard disabled for security - no public management interface
       - "traefik.enable=false"
@@ -67,7 +67,7 @@ services:
   #   volumes:
   #     - /etc/localtime:/etc/localtime:ro
   #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     - /home/ubuntu/docker-data/portainer:/data
+  #     - ${HOME}/docker-data/portainer:/data
   #   labels:
   #     - "traefik.enable=true"
   #     - "traefik.docker.network=proxy"
@@ -118,8 +118,8 @@ services:
   #   volumes:
   #     - /etc/localtime:/etc/localtime:ro
   #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     - /home/ubuntu/docker-data/headscale/config:/etc/headscale
-  #     - /home/ubuntu/docker-data/headscale/data:/var/lib/headscale
+  #     - ${HOME}/docker-data/headscale/config:/etc/headscale
+  #     - ${HOME}/docker-data/headscale/data:/var/lib/headscale
   #   command: headscale serve
   #   labels:
       # - "traefik.enable=true"
@@ -167,7 +167,7 @@ services:
   #   volumes:
   #     - /etc/localtime:/etc/localtime:ro
   #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     - /home/ubuntu/docker-data/healthchecks:/config
+  #     - ${HOME}/docker-data/healthchecks:/config
   #   env_file:
   #     - .env
   #   labels:
@@ -234,7 +234,7 @@ services:
   #   networks:
   #     - proxy
   #   volumes:
-  #     - /home/ubuntu/docker-data/gitea:/data
+  #     - ${HOME}/docker-data/gitea:/data
   #     - /etc/timezone:/etc/timezone:ro
   #     - /etc/localtime:/etc/localtime:ro
   #   ports:
@@ -340,7 +340,7 @@ services:
     networks:
       - proxy
     volumes:
-      - /home/ubuntu/docker-data/forgejo:/data
+      - ${HOME}/docker-data/forgejo:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
@@ -434,7 +434,7 @@ services:
   #   networks:
   #     - proxy
   #   volumes:
-  #     - /home/ubuntu/docker-data/gitea-mirror:/app/data
+  #     - ${HOME}/docker-data/gitea-mirror:/app/data
   #     - /etc/localtime:/etc/localtime:ro
   #   environment:
   #     # Basic settings
@@ -508,7 +508,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/ubuntu/docker-data/uptime-kuma:/app/data
+      - ${HOME}/docker-data/uptime-kuma:/app/data
     networks:
       - proxy
     labels:
@@ -565,7 +565,7 @@ services:
     networks:
       - proxy
     volumes:
-      - /home/ubuntu/docker-data/searxng:/etc/searxng:rw
+      - ${HOME}/docker-data/searxng:/etc/searxng:rw
     environment:
       - SEARXNG_BASE_URL=https://search.${SEARCH_DOMAIN}/
     labels:
