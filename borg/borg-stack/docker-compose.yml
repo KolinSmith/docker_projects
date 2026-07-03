@@ -346,6 +346,7 @@ services:
     network_mode: bridge
 
     labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/av1155/houndarr/main/src/houndarr/static/img/houndarr-logo-dark.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:8877]/"
 
     ports:
