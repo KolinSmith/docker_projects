@@ -67,7 +67,7 @@ services:
     image: henrygd/beszel-agent:latest
     container_name: beszel-agent
     restart: unless-stopped
-    user: "0:0"  # non-root (1000:1000) breaks LISTEN socket creation: host dax uid is 1001, not 1000, and ./beszel_socket dir (owned dax:users, mode 755) isn't group/other-writable
+    user: "1001:100"  # matches host dax (uid 1001, gid 100/users), the actual owner of ./beszel_socket — generic 1000:1000 broke LISTEN socket creation since dax's real uid is 1001, not 1000
     network_mode: host
     depends_on:
       - beszel-socket-proxy
