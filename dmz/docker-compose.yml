@@ -680,7 +680,7 @@ services:
 ####################################################################################################
 
   bentopdf: #https://github.com/alam00000/bentopdf/blob/main/SIMPLE_MODE.md
-    image: bentopdf/bentopdf-simple:latest
+    image: bentopdfteam/bentopdf-simple:latest
     container_name: bentopdf
     restart: unless-stopped
     security_opt:
