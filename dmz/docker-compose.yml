@@ -711,6 +711,13 @@ services:
       - "traefik.http.routers.bentopdf-homedomain.rule=Host(`pdf.${SEARCH_DOMAIN}`)"
       - "traefik.http.routers.bentopdf-homedomain.tls.certresolver=cloudflare"
       - "traefik.http.routers.bentopdf-homedomain.service=bentopdf-service"
+      - "traefik.http.routers.bentopdf-homedomain.middlewares=bentopdf-coep"
+      # Cross-Origin-Embedder-Policy is required (alongside the Cross-Origin-Opener-Policy
+      # the container's own nginx already sets) for crossOriginIsolated/SharedArrayBuffer,
+      # which the LibreOffice-WASM-based Office-to-PDF tools (Word/Excel/PowerPoint) need.
+      # Scoped to this router only - not a shared middleware - since a blanket COEP would
+      # risk breaking cross-origin resource loading on other services.
+      - "traefik.http.middlewares.bentopdf-coep.headers.customresponseheaders.Cross-Origin-Embedder-Policy=require-corp"
       # Service definition
       - "traefik.http.services.bentopdf-service.loadbalancer.server.port=8080"
     deploy:
