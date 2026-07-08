@@ -14,7 +14,8 @@ RUN apk add --no-cache \
     gitleaks \
     wget \
     docker-cli \
-    terraform
+    terraform \
+    go-1.25
 
 # Pip packages
 # --root-user-action=ignore required; manylinux wheels don't work on musl
