@@ -48,10 +48,14 @@ jobs:
             TAGS="$TAGS -t ${REGISTRY}:${V} -t ${REGISTRY}:${V_NOPREFIX} -t ${REGISTRY}:${MINOR} -t ${REGISTRY}:${MAJOR}"
           fi
 
-          docker buildx build --push $TAGS ci-images/ci-tools/
+          # provenance/sbom disabled: buildx's default attestation manifests
+          # trigger a 401 on the blob HEAD check when pushing to this
+          # registry over plain HTTP - confirmed deterministic (not
+          # transient) via two identical failures on 2026-07-12.
+          docker buildx build --push --provenance=false --sbom=false $TAGS ci-images/ci-tools/
 
           if echo "$REF" | grep -q '^refs/tags/v'; then
-            docker buildx build --push \
+            docker buildx build --push --provenance=false --sbom=false \
               -t ${REGISTRY}:${V} \
               -t ${REGISTRY}:${V_NOPREFIX} \
               -t ${REGISTRY}:${MINOR} \
