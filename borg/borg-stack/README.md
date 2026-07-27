@@ -22,6 +22,8 @@ Full Docker Compose stack for the Borg Unraid server. Covers media management, m
 | `kometa` | kometateam/kometa | — | Plex metadata manager (collections, overlays, ratings). Runs on schedule. |
 | `ersatztv` | jasongdove/ersatztv | 8409 (host) | Virtual TV channel server for live TV simulation in Plex. |
 | `huntarr` | hotdari/huntarr | 5702 | Missing media hunter for Sonarr/Radarr. |
+| `tdarr-server` | ghcr.io/haveagitgat/tdarr | 8265, 8266 | Automated media transcoding UI/API. Transcodes copied media to 720p H.265 for the mobile Plex library (`media-mobile`, used for offline plane viewing). |
+| `tdarr-node` | ghcr.io/haveagitgat/tdarr_node | — | GPU (NVENC) transcode worker for `tdarr-server`. |
 
 ### Infrastructure
 
