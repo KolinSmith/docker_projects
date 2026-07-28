@@ -80,7 +80,11 @@ services:
     volumes:
       - runner_data:/data
       - /var/run/docker.sock:/var/run/docker.sock
-      - runner_config:/etc/forgejo-runner
+      # Bind-mounted (not a named volume) so config.yml is git-tracked -- see
+      # forgejo-runner/config.yml. deploy_docker_env copies it here from the
+      # repo. Fixes the 2026-07-27 OOM freeze: job containers spawned by this
+      # daemon had no memory limit at all until this file added one.
+      - /home/dax/docker_data/forgejo-runner/config.yml:/etc/forgejo-runner/config.yml:ro
       - /home/dax/.docker/config.json:/data/.docker/config.json:ro
     security_opt:
       - no-new-privileges:true
@@ -114,6 +118,4 @@ networks:
 
 volumes:
   runner_data:
-    driver: local
-  runner_config:
     driver: local

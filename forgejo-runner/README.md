@@ -242,6 +242,44 @@ curl -I $FORGEJO_INSTANCE_URL
 - Sufficient resources (RAM, disk space) available
 - Docker socket is accessible: `docker ps`
 
+### Host Froze Completely (2026-07-27 incident)
+
+The whole box became unresponsive (ping worked, SSH hung at banner exchange —
+not even a clean refusal) while several PRs were opened/updated in quick
+succession. Required a physical power cycle to recover.
+
+**Root cause**: `.forgejo/workflows/validate.yml` runs 4 jobs per PR trigger
+(yaml-lint, checkov, gitleaks, `scc` full-repo scan). This 968MB-RAM SBC caps
+the `forgejo-runner` daemon container at 512M via this compose file, but the
+*ephemeral job containers* the daemon spawns via the Docker socket had **no
+memory limit at all** (`HostConfig.Memory: 0`, confirmed via `docker inspect`
+on an orphaned job container after the freeze). Jobs run sequentially
+(`runner.capacity: 1`, not parallel), so this was cumulative pressure across
+a back-to-back job sequence exhausting RAM+swap badly enough to take down
+`sshd` too, not a parallel-job pileup.
+
+**Fix**: `container.options: "--memory=384m"` in `config.yml`, capping every
+job container the runner spawns. `config.yml` used to live only in a
+Docker-managed named volume (invisible to git); it's now a tracked file in
+this directory (`forgejo-runner/config.yml`), bind-mounted in via
+`deploy_docker_env`'s generic "extra service config files" mechanism (see
+`ansible_projects/roles/deploy_docker_env/tasks/main.yml` — copies anything
+in this directory besides `docker-compose.yml`/`.env*`/`README*` to
+`~/docker_data/forgejo-runner/` on the target host, matching the pattern
+already used for `torrc`/`traefik.yml`-style configs). Redeploy with:
+```bash
+cd ~/code_base/ansible_projects
+ansible-playbook playbooks/deploy_docker/deploy_docker.yml -l forgejo-runner
+```
+Editing `config.yml` in this repo and redeploying is now the correct way to
+change runner behavior — no more manual `docker exec`/`docker cp` patches.
+
+Also worth knowing: `journald` on this host is `Storage=volatile` (RAM-only,
+wiped every reboot, to reduce SD card wear) — so a repeat freeze won't leave
+system logs to diagnose from. `docker ps -a` for orphaned job containers
+(created-but-not-cleanly-exited around the freeze time) is the next best
+forensic source, same as this incident.
+
 ### Permission Denied on Docker Socket
 
 **Fix:**
@@ -284,14 +322,13 @@ docker ps  # Should work without sudo
 **Container Name:** forgejo-runner
 **Network:** Custom bridge network (`runner_network`)
 **Volumes:**
-- `runner_data` - Runner persistent data
-- `runner_config` - Runner configuration
+- `runner_data` - Runner persistent data (registration state, etc.)
+- `config.yml` - Runner configuration, bind-mounted read-only from this repo (via `deploy_docker_env`, see Troubleshooting) — not a named volume
 - `/var/run/docker.sock` - Docker socket (for running containers)
 
 **Resource Limits:**
-- Memory: 512MB limit / 256MB reservation
-- PIDs: 256 max processes
-- Tmpfs: 512MB with noexec,nosuid,nodev
+- Daemon container: 512MB limit / 256MB reservation, 1024 max PIDs, 512MB tmpfs (noexec,nosuid,nodev)
+- Job containers spawned by the daemon: `--memory=384m` (set in `config.yml`, see Troubleshooting → Host Froze Completely)
 
 **Labels:**
 - `arm64` - ARM64 architecture builds
