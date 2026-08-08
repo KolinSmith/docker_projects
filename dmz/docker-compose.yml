@@ -337,6 +337,11 @@ services:
       - FORGEJO__cache__ADAPTER=redis
       - FORGEJO__cache__HOST=redis://forgejo-cache:6379/0?pool_size=100&idle_timeout=180s
       - FORGEJO__cache__ITEM_TTL=24h
+      # Soft Go-runtime memory target, kept below the hard cgroup limit below so the
+      # garbage collector proactively reclaims heap instead of the container getting
+      # OOM-killed when a crawler bombards many concurrent commit/diff views
+      # (root cause of the 2026-08-04/08-08 slowdowns). ~80% of the 384M hard limit.
+      - GOMEMLIMIT=300MiB
     networks:
       - proxy
     volumes:
@@ -374,9 +379,16 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          # Raised from 256M 2026-08-08: three separate crawler incidents (2026-08-04
+          # mirror/dawarich, 2026-08-08 mirror/semaphore, 2026-08-08 mirror/cloudreve)
+          # each pinned Forgejo at the 256M cgroup ceiling, causing GC thrashing and
+          # 30-60s+ request latency until the offending repo was made private.
+          # 384M is a ~50% bump sized against actual host headroom (956MB total RAM,
+          # ~270MB "available" at time of change) — not an arbitrary large value on
+          # this free-tier box. Paired with GOMEMLIMIT above.
+          memory: 384M
         reservations:
-          memory: 64M
+          memory: 96M
     logging:
       driver: "json-file"
       options:
