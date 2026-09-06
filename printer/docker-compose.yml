@@ -1,0 +1,92 @@
+services:
+  cups:
+    image: ghcr.io/anujdatar/cups-server:latest
+    container_name: cups
+    restart: unless-stopped
+    # host networking so CUPS (IPP :631) and its bundled Avahi (mDNS/AirPrint)
+    # are reachable on the LAN without NAT
+    network_mode: host
+    environment:
+      TZ: America/Chicago
+      CUPSADMIN: "${CUPS_ADMIN_USER:-print}"
+      CUPSPASSWORD: "${CUPS_ADMIN_PASSWORD}"
+    volumes:
+      - ./cups:/etc/cups            # persistent queue config + PPDs
+      - ./cups-run:/run/cups
+    devices:
+      - /dev/bus/usb:/dev/bus/usb   # Brother HL-L2320D over USB
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          pids: 256
+        reservations:
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  beszel-socket-proxy:
+    image: lscr.io/linuxserver/socket-proxy:latest
+    container_name: beszel-socket-proxy
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /run
+    ports:
+      - "127.0.0.1:2375:2375"
+    environment:
+      CONTAINERS: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    user: "1000:1000"  # host dax uid/gid; adjust if the reimage assigns 1001
+    tty: false
+    stdin_open: false
+    network_mode: host
+    depends_on:
+      - beszel-socket-proxy
+    environment:
+      PORT: 45876
+      KEY: "${BESZEL_AGENT_KEY}"
+      DOCKER_HOST: tcp://127.0.0.1:2375
+    volumes:
+      - ./beszel_agent_data:/var/lib/beszel-agent
+      - /:/host:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+      - SYS_PTRACE
+      - NET_ADMIN
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=128m
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          pids: 128
+        reservations:
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
