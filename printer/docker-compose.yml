@@ -1,29 +1,37 @@
 services:
   cups:
-    image: ghcr.io/anujdatar/cups-server:latest
+    # Custom image: CUPS + Avahi + Samba + wsdd (ci-images/cups-samba/).
+    # Built by .forgejo/workflows/build-cups-samba-image.yml.
+    image: 100.86.4.29:3001/dax/docker_projects/cups-samba:latest
     container_name: cups
     restart: unless-stopped
-    # host networking so CUPS (IPP :631) and its bundled Avahi (mDNS/AirPrint)
-    # are reachable on the LAN without NAT
+    # host networking so IPP :631, mDNS/AirPrint :5353, and SMB/NetBIOS/WS-D
+    # (445/139/137/138/3702) are reachable on the LAN without NAT
     network_mode: host
+    # supervisord is PID 1 but is not a full init; give it real zombie reaping
+    init: true
     environment:
       TZ: America/Chicago
-      CUPSADMIN: "${CUPS_ADMIN_USER:-print}"
-      CUPSPASSWORD: "${CUPS_ADMIN_PASSWORD}"
+      CUPS_ADMIN_USER: "${CUPS_ADMIN_USER:-print}"
+      CUPS_ADMIN_PASSWORD: "${CUPS_ADMIN_PASSWORD}"
+      # declarative queue — the image adds it on first start if absent
+      PRINTER_NAME: "${PRINTER_NAME:-Brother_Printer}"
+      PRINTER_URI: "${PRINTER_URI}"
+      PRINTER_PPD: "${PRINTER_PPD:-drv:///brlaser.drv/brl2320d.ppd}"
     volumes:
       - ./cups:/etc/cups            # persistent queue config + PPDs
-      - ./cups-run:/run/cups
     devices:
       - /dev/bus/usb:/dev/bus/usb   # Brother HL-L2320D over USB
-    security_opt:
-      - no-new-privileges:true
+    # no `security_opt: no-new-privileges` here: Samba's setuid helpers and
+    # CUPS filter spawning need it off (same reason the pihole container drops
+    # it on ARM). The container is single-purpose on an isolated VLAN.
     deploy:
       resources:
         limits:
-          memory: 256M
-          pids: 256
+          memory: 512M
+          pids: 512
         reservations:
-          memory: 64M
+          memory: 96M
     logging:
       driver: "json-file"
       options:
@@ -52,7 +60,7 @@ services:
     image: henrygd/beszel-agent:latest
     container_name: beszel-agent
     restart: unless-stopped
-    user: "1000:1000"  # host dax uid/gid; adjust if the reimage assigns 1001
+    user: "1000:1000"  # `dax` on the provisioned box; keep in sync with Ansible
     tty: false
     stdin_open: false
     network_mode: host
