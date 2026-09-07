@@ -17,9 +17,10 @@ from `ansible_projects/roles/deploy_docker_env/templates/printer.env.example`.
 
 1. `deploy_docker_env` clones this repo to the controller and writes `~/docker/`
    on the host (compose + `.env`).
-2. The host's Docker daemon must trust the Forgejo registry — Ansible sets
-   `{"insecure-registries": ["100.86.4.29:3001"]}` and logs the daemon in
-   (`ansible_projects` PR #53).
+2. The host's Docker daemon trusts the plain-HTTP Forgejo registry — Ansible
+   sets `{"insecure-registries": ["100.86.4.29:3001"]}` (`ansible_projects`
+   PR #53). The `cups-samba` package is public, so no `docker login` is needed;
+   the box reaches the registry over Tailscale.
 3. Register `printserver:45876` in the Beszel hub UI on voyager.
 4. `cd ~/docker && docker compose up -d`
 5. The `cups` image auto-creates the `PRINTER_NAME` queue from `PRINTER_URI` /
