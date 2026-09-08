@@ -36,13 +36,17 @@ RUN apt-get update \
         supervisor \
         ca-certificates \
         procps \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    # Stash the real gstoraster before `COPY root/ /` shadows it with the
+    # wrapper script (root/usr/lib/cups/filter/gstoraster). See that file for
+    # why — its `gs -sDEVICE=bbox` pre-pass hangs on macOS cgpdftops PostScript.
+    && cp -a /usr/lib/cups/filter/gstoraster /usr/lib/cups/filter/gstoraster.bin
 
 # Baked config + scripts (see root/ tree)
 COPY root/ /
 
 RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/provision-queue.sh \
-        /usr/lib/cups/filter/gstopdf \
+        /usr/lib/cups/filter/gstoraster \
     && usermod -aG lpadmin root \
     && mkdir -p /run/cups /run/dbus /run/samba /var/spool/samba \
         /var/log/supervisor /var/lib/samba/printers \

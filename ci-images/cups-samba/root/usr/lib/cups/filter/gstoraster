@@ -1,0 +1,57 @@
+#!/bin/sh
+#
+# gstoraster — local wrapper around the cups-filters gstoraster binary.
+#
+# Why this file exists
+# --------------------
+# Stock gstoraster, for PostScript input, first runs a page-box detection pass:
+#
+#     gs -q -dNOPAUSE -dBATCH -sDEVICE=bbox \
+#        -dDEVICEWIDTHPOINTS=1 -dDEVICEHEIGHTPOINTS=1 <input>
+#
+# On the form-heavy PostScript macOS emits when an app prints a fillable PDF
+# through Apple's cgpdftops filter (AcroForm fields flattened by Quartz into
+# many small scaled image/shading/pattern ops), that pass hits a Ghostscript
+# pathology and spins at 100% CPU indefinitely on the Pi 3B this image runs on.
+# The job never leaves "Sending data to printer". PDF input is unaffected —
+# gstoraster reads the MediaBox directly and skips the bbox pass — and the real
+# render (gs -sDEVICE=cups) does the same file in ~2s, so the hardware is fine.
+#
+# Every filter chain that produces CUPS raster for this printer ends at
+# gstoraster: PDF jobs via `pdftopdf -> gstoraster`, and PostScript jobs via
+# either `gstopdf -> gstoraster` (gstopdf is itself just a gstoraster wrapper)
+# or `pstops -> application/vnd.cups-postscript -> gstoraster`. Fixing it here
+# covers all of them.
+#
+# This wrapper guarantees the real binary only ever sees PDF: PostScript is
+# pre-converted with plain Ghostscript pdfwrite (no bbox pass); anything else
+# (PDF, CUPS raster) is passed straight through. COPY root/ / runs after the
+# cups-filters apt install; the Dockerfile stashes the real binary as
+# gstoraster.bin before the copy. Revisit if cups-filters ever fixes the bbox
+# pass.
+#
+# Filter args: <job-id> <user> <title> <copies> <options> [file]
+# Reads from the file arg if given, else stdin. Writes CUPS raster to stdout —
+# or PDF, when invoked via gstopdf with OUTFORMAT=PDF in the environment (the
+# real binary honours that; this wrapper is transparent to it).
+
+REAL=/usr/lib/cups/filter/gstoraster.bin
+
+infile=${6:-}
+tmp=$(mktemp /tmp/gsw.XXXXXX)
+if [ -n "$infile" ]; then
+    cat "$infile" > "$tmp"
+else
+    cat > "$tmp"
+fi
+
+if [ "$(dd if="$tmp" bs=2 count=1 2>/dev/null)" = "%!" ]; then
+    echo "DEBUG: gstoraster-wrapper: PostScript input, pre-converting to PDF" >&2
+    pdf="$tmp.pdf"
+    gs -q -dNOPAUSE -dBATCH -dSAFER -dNOINTERPOLATE -dAutoRotatePages=/None \
+       -dCompatibilityLevel=1.5 -sDEVICE=pdfwrite -sOutputFile="$pdf" "$tmp" </dev/null >&2
+    rm -f "$tmp"
+    exec "$REAL" "$1" "$2" "$3" "$4" "$5" "$pdf"
+else
+    exec "$REAL" "$1" "$2" "$3" "$4" "$5" "$tmp"
+fi
