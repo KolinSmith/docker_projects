@@ -10,7 +10,7 @@
 #
 # Plan: dotfiles/.claude/plans/2026-09-07-cups-samba-image.md
 
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 LABEL org.opencontainers.image.source="https://git.hiddenba.se/dax/docker_projects"
 LABEL org.opencontainers.image.description="CUPS + Avahi + Samba print server (Brother HL-L2320D / brlaser)"
@@ -24,6 +24,8 @@ RUN apt-get update \
         cups-filters \
         cups-ipp-utils \
         printer-driver-brlaser \
+        ghostscript \
+        poppler-utils \
         avahi-daemon \
         avahi-utils \
         libnss-mdns \
