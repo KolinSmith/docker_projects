@@ -43,7 +43,10 @@ RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/provision-queue.sh \
     && usermod -aG lpadmin root \
     && mkdir -p /run/cups /run/dbus /run/samba /var/spool/samba \
         /var/log/supervisor /var/lib/samba/printers \
-    && chmod 1777 /var/spool/samba
+    && chmod 1777 /var/spool/samba \
+    # Snapshot the built /etc/cups so the entrypoint can re-seed it when the
+    # `./cups:/etc/cups` bind mount shadows the image with an empty dir.
+    && cp -a /etc/cups /opt/cups-default
 
 # Informational only under `network_mode: host`:
 #   631/tcp  IPP        5353/udp mDNS (AirPrint)
