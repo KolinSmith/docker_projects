@@ -48,11 +48,14 @@ jobs:
             TAGS="$TAGS -t ${REGISTRY}:${V} -t ${REGISTRY}:${V_NOPREFIX} -t ${REGISTRY}:${MINOR} -t ${REGISTRY}:${MAJOR}"
           fi
 
-          # arm64 only: printserver is a Pi 3B on 64-bit Bookworm; the CI runner
-          # is arm64 so this builds natively.
+          # The Forgejo runner is arm64, and its only buildx builder is the
+          # plain `docker` driver — which rejects an explicit `--platform`.
+          # No `--platform`: the image is built natively for the runner's arch
+          # (arm64), exactly like build-ci-image.yml. printserver (Pi 3B) runs
+          # 64-bit Bookworm, so arm64 is what it needs.
           #
           # provenance/sbom disabled: buildx's default attestation manifests
           # trigger a 401 on the blob HEAD check when pushing to this registry
           # over plain HTTP (see build-ci-image.yml).
           docker buildx build --push --provenance=false --sbom=false \
-            --platform linux/arm64 $TAGS ci-images/cups-samba/
+            $TAGS ci-images/cups-samba/
