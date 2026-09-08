@@ -14,6 +14,16 @@ mkdir -p /run/cups /run/dbus /run/samba /var/spool/samba \
 chmod 1777 /var/spool/samba
 dbus-uuidgen --ensure
 
+# --- seed /etc/cups if a bind mount left it empty ----------------------
+# The compose stack mounts `./cups:/etc/cups` for queue persistence; on first
+# run that host dir is empty and shadows the image's baked config, so cupsd
+# starts with no cups-files.conf / cupsd.conf and crash-loops. Re-seed from
+# the snapshot taken at build time.
+if [ ! -f /etc/cups/cups-files.conf ]; then
+    log "/etc/cups is empty (bind mount) — seeding from /opt/cups-default"
+    cp -a /opt/cups-default/. /etc/cups/
+fi
+
 # --- CUPS admin account -------------------------------------------------
 # cups-files.conf: SystemGroup = root lpadmin. The web UI / lpadmin need a real
 # account in group lpadmin.
