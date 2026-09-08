@@ -1,7 +1,7 @@
 # printer
 
 Docker stack for the print server (`printserver`, 192.168.9.11 — a Raspberry
-Pi 3B on 64-bit Raspberry Pi OS Bookworm Lite). Deployed by `ansible_projects`
+Pi 3B on Armbian Debian 13 / Trixie, minimal arm64). Deployed by `ansible_projects`
 `deploy_docker_env` (`deploy_docker_services_for: printer`); `.env` is rendered
 from `ansible_projects/roles/deploy_docker_env/templates/printer.env.example`.
 
@@ -17,10 +17,12 @@ from `ansible_projects/roles/deploy_docker_env/templates/printer.env.example`.
 
 1. `deploy_docker_env` clones this repo to the controller and writes `~/docker/`
    on the host (compose + `.env`).
-2. The host's Docker daemon trusts the plain-HTTP Forgejo registry — Ansible
-   sets `{"insecure-registries": ["100.86.4.29:3001"]}` (`ansible_projects`
-   PR #53). The `cups-samba` package is public, so no `docker login` is needed;
-   the box reaches the registry over Tailscale.
+2. The host's Docker daemon trusts the plain-HTTP Forgejo registry over
+   Tailscale — Ansible sets `{"insecure-registries": ["100.86.4.29:3001"]}`
+   (`ansible_projects` PR #53). Ideally the `cups-samba` package is set
+   **Public** in the Forgejo UI (then no auth is needed); until it is,
+   `deploy_docker_env` runs a `docker login` for the printer host so the pull
+   still works.
 3. Register `printserver:45876` in the Beszel hub UI on voyager.
 4. `cd ~/docker && docker compose up -d`
 5. The `cups` image auto-creates the `PRINTER_NAME` queue from `PRINTER_URI` /
