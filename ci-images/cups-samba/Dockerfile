@@ -42,6 +42,7 @@ RUN apt-get update \
 COPY root/ /
 
 RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/provision-queue.sh \
+        /usr/lib/cups/filter/gstopdf \
     && usermod -aG lpadmin root \
     && mkdir -p /run/cups /run/dbus /run/samba /var/spool/samba \
         /var/log/supervisor /var/lib/samba/printers \
