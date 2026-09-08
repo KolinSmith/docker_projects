@@ -32,7 +32,7 @@ RUN apt-get update \
         dbus \
         samba \
         samba-common-bin \
-        wsdd \
+        wsdd2 \
         supervisor \
         ca-certificates \
         procps \
