@@ -117,10 +117,10 @@ jobs:
 
       - name: Post stats comment
         env:
-          GH_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          GH_TOKEN: ${{ secrets.WORKFLOW_KEY }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
-          API_BASE: ${{ secrets.FORGEJO_API_URL }}
+          API_BASE: ${{ github.server_url }}/api/v1
         run: |
           python3 << 'PYEOF'
           import json, os, sys, urllib.request, urllib.error
@@ -146,7 +146,7 @@ jobs:
                   return None
 
           # This job is `continue-on-error: true` (informational, must never block a
-          # merge) — but that also meant a broken FORGEJO_TOKEN silently showed green.
+          # merge) — but that also meant a broken WORKFLOW_KEY silently showed green.
           # Exiting non-zero on failure keeps the step visibly red without blocking.
           comments = req("GET", f"{api}/repos/{repo}/issues/{pr}/comments")
           if comments is None:
