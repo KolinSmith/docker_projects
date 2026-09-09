@@ -10,14 +10,6 @@ on:
       - 'v*.*.*'
   workflow_dispatch:
 
-# The registry login uses the per-run token instead of a hand-made
-# secrets.FORGEJO_TOKEN (which expired and broke every build — a ~50s failure
-# at `docker login`, not a build problem). `packages: write` lets ${{ github.token }}
-# push to this repo's own packages (ci-tools / cups-samba).
-permissions:
-  contents: read
-  packages: write
-
 jobs:
   build:
     name: Build and push ci-tools image
@@ -31,10 +23,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Log in to the container registry
+        env:
+          WORKFLOW_USER: ${{ secrets.WORKFLOW_USER }}
+          WORKFLOW_KEY: ${{ secrets.WORKFLOW_KEY }}
         run: |
-          echo "${{ github.token }}" | docker login 100.86.4.29:3001 \
-            -u "${{ github.repository_owner }}" --password-stdin \
-          || { echo "::error::registry login failed - the Actions token lacks package:write on this instance (or the registry is unreachable). See README ## CI."; exit 1; }
+          echo "${WORKFLOW_KEY}" | docker login 100.86.4.29:3001 \
+            -u "${WORKFLOW_USER}" --password-stdin \
+          || { echo "::error::registry login failed - check the WORKFLOW_USER / WORKFLOW_KEY secrets (Forgejo access token needs write:package)."; exit 1; }
 
       - name: Build and push
         env:
