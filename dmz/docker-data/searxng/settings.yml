@@ -542,7 +542,6 @@ engines:
   - name: bing
     engine: bing
     shortcut: bi
-    disabled: true
 
   - name: bing images
     engine: bing_images
@@ -1760,7 +1759,6 @@ engines:
     engine: qwant
     shortcut: qw
     categories: [general, web]
-    disabled: true
     additional_tests:
       rosebud: *test_rosebud
 
@@ -2153,7 +2151,6 @@ engines:
   - name: yahoo
     engine: yahoo
     shortcut: yh
-    disabled: true
 
   - name: yahoo news
     engine: yahoo_news
@@ -2397,6 +2394,9 @@ engines:
     shortcut: mjk
     engine: mojeek
     categories: [general, web]
+    # Re-disabled 2026-09-03: Mojeek now returns HTTP 403 (AccessDenied) on every
+    # query from the DMZ datacenter IP, so it only spams the logs. Re-enable if
+    # outbound is later routed through a residential IP.
     disabled: true
 
   - name: mojeek images
