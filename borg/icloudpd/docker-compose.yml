@@ -1,0 +1,48 @@
+name: icloudpd
+
+# icloudpd (icloud-photos-downloader) — pulls the iCloud Photo Library down to
+# borg as an incremental backup: originals, EXIF, RAW, Live Photos. It only ever
+# ADDS files (no --auto-delete) so photos deleted in iCloud stay in the backup.
+#
+# Data lands in /mnt/disks/HUB/Photos/iCloud/, which the weekly rclone job
+# already ships to iDrive e2 — so iCloud photos get off-site for free.
+#
+# The MFA/session cookie lives in /config (appdata) and MUST persist. Apple's
+# 2FA session lasts ~60 days; when it expires the container logs an auth error
+# and waits — re-auth through the web UI on ICLOUDPD_WEBUI_PORT (or
+# `docker exec -it icloudpd icloudpd --username <id> --password <pw> --auth-only`).
+#
+# See ./README.md for first-run setup.
+
+services:
+  icloudpd:
+    image: icloudpd/icloudpd:latest
+    container_name: icloudpd
+    restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/icloud-photos-downloader/icloud_photos_downloader/master/icloudpd-logo.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8080]/"
+    environment:
+      TZ: ${TZ:-America/Chicago}
+    ports:
+      # icloudpd web UI — enter the Apple ID password + 2FA code here
+      - "${ICLOUDPD_WEBUI_PORT:-8579}:8080"
+    volumes:
+      # session cookie + keyring — persistent, do NOT make this ephemeral
+      - /mnt/disks/appdataAndDocker/appdata/icloudpd/config:/config
+      # download target (picked up by the weekly rclone -> iDrive e2 job)
+      - /mnt/disks/HUB/Photos/iCloud:/data
+    # NB: the image entrypoint needs "icloudpd" (or "icloud") as the first arg.
+    command:
+      - icloudpd
+      - --username=${APPLE_ID}
+      - --directory=/data
+      - --cookie-directory=/config
+      - --folder-structure={:%Y/%Y-%m}
+      - --size=original
+      - --align-raw=original
+      - --live-photo-size=original
+      - --set-exif-datetime
+      - --password-provider=webui
+      - --mfa-provider=webui
+      - --watch-with-interval=${WATCH_INTERVAL:-21600}
