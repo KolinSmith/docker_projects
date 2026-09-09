@@ -15,10 +15,13 @@ jobs:
     name: Build and push cups-samba image
     runs-on: linux
     container:
-      image: cgr.dev/chainguard/wolfi-base:latest
+      # docker:cli is Alpine/musl (no glibc mismatch) and bundles docker + buildx.
+      # (wolfi-base:latest is a rolling tag; its nodejs started requiring a
+      # newer glibc than the image ships, which broke actions/checkout.)
+      image: docker:28-cli
     steps:
       - name: Install dependencies
-        run: apk add --no-cache docker-cli docker-cli-buildx git nodejs
+        run: apk add --no-cache git nodejs
 
       - uses: actions/checkout@v4
 
