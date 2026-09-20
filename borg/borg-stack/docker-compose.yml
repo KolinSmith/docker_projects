@@ -311,6 +311,7 @@ services:
       - /mnt/disks/appdataAndDocker/appdata/tdarr-server/configs:/app/configs
       - /mnt/disks/appdataAndDocker/appdata/tdarr-server/logs:/app/logs
       - /mnt/user/media-mobile:/media-mobile
+      - /mnt/user/media:/media
 
   # tdarr-node - GPU (GTX 1660, NVENC) transcode worker for tdarr-server.
   # ffmpegVersion must be "7" (jellyfin-ffmpeg7) -- ffmpeg6 (the image
@@ -350,6 +351,7 @@ services:
       - /mnt/disks/appdataAndDocker/appdata/tdarr-node/logs:/app/logs
       - /mnt/disks/appdataAndDocker/appdata/tdarr-node/temp:/temp
       - /mnt/user/media-mobile:/media-mobile
+      - /mnt/user/media:/media
 
     deploy:
       resources:
