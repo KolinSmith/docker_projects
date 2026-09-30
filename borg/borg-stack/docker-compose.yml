@@ -68,7 +68,7 @@ services:
       DOCKER_HOST: tcp://127.0.0.1:2375
 
     volumes:
-      - /mnt/user/appdata/beszel-agent:/var/lib/beszel-agent
+      - /mnt/disks/appdataAndDocker/appdata/beszel-agent:/var/lib/beszel-agent
       - /:/host:ro
 
     security_opt:
