@@ -13,18 +13,29 @@ endpoints and works well.
 
 - **Add-only.** No `--auto-delete` — a photo removed from iCloud stays in the
   backup.
-- Writes to `/mnt/disks/HUB/Photos/iCloud/<year>/<year>-<month>/`. The weekly
-  `rclone -> iDrive e2` User Script already covers `/mnt/disks/HUB/`, so this is
-  off-site automatically.
+- Writes to `/mnt/user/media/iCloudPhotos/<year>/<month>/<day>/` — a **real,
+  pre-existing backup location** discovered 2026-10-02, not a fresh directory.
+  It already holds 244GB of real photos spanning 2008 through 2026-03-17, from
+  an earlier icloudpd setup (never committed to this repo) that stopped when
+  its Apple 2FA session expired and nobody re-authenticated. Confirmed
+  `/mnt/disks/HUB/BACKUPS/iCloud_Backup` is already an exact mirror of this
+  directory (identical files/timestamps), so it's already covered off-site —
+  deploying this PR just resumes the existing backup, it does not start a
+  fresh multi-hundred-GB redownload.
 - Session cookie + keyring live in
   `/mnt/disks/appdataAndDocker/appdata/icloudpd/config` and **must persist**.
+  This directory already contained stale session files (`*.session`, `*.bak`)
+  from the same prior setup, last touched 2026-03-17 — consistent with the
+  last downloaded photo's date, confirming the old session's expiry is what
+  actually stopped the backup. Those files are harmless to leave in place;
+  icloudpd will treat the expired session as invalid and prompt for fresh
+  auth via the web UI.
 
 ## First-run setup
 
-1. On borg, in this project dir:
+1. On borg, in this project dir (the config dir and `/mnt/user/media/iCloudPhotos`
+   already exist from the prior setup — no need to create them fresh):
    ```
-   mkdir -p /mnt/disks/appdataAndDocker/appdata/icloudpd/config
-   mkdir -p /mnt/disks/HUB/Photos/iCloud
    cp .env.example .env          # then edit: APPLE_ID, ICLOUDPD_WEBUI_PORT, WATCH_INTERVAL
    ```
    (`.env` sits next to `docker-compose.yml` — compose reads it for `${...}`
