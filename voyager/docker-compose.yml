@@ -105,6 +105,47 @@ services:
         max-size: "5m"
         max-file: "3"
 
+  hermes:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes
+    restart: unless-stopped
+    command: gateway run
+    ports:
+      - "8642:8642"  # gateway API
+      - "9119:9119"  # dashboard
+    environment:
+      HERMES_DASHBOARD: "1"
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      # Consumed by Task 8's Mem0 plugin config (MEM0_API_KEY), not by Hermes
+      # directly -- same value as mem0's own ADMIN_API_KEY below.
+      MEM0_ADMIN_API_KEY: ${MEM0_ADMIN_API_KEY}
+    volumes:
+      # Shared with the ~/.hermes symlink into dotfiles/.hermes (skills are
+      # git-tracked there; everything else under ~/.hermes is gitignored).
+      - ${HOME}/.hermes:/opt/data
+      # Read-only live access to the content Claude Code reads today --
+      # deliberately NOT migrated into Mem0 (see spec's memory migration
+      # scope). Narrow by design: only what Hermes actually needs to read.
+      - /home/dax/wiki:/data/wiki:ro
+      - /home/dax/code_base/dotfiles:/data/dotfiles:ro
+      - /home/dax/code_base/ansible_projects:/data/ansible_projects:ro
+      - /home/dax/code_base/docker_projects:/data/docker_projects:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
   # capture:
   #   image: ghcr.io/bluewave-labs/capture:latest
   #   container_name: capture
