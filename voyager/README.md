@@ -17,6 +17,14 @@ Docker Compose stack for the Voyager development server (192.168.9.2).
 |-----------|-------|------|-------------|
 | `hawser` | ghcr.io/finsys/hawser | — | Dockhand edge agent. Connects outbound to Dockhand on Borg (`:3004`) so Dockhand can manage Voyager containers without inbound port exposure. |
 
+### AI Interface
+
+| Container | Image | Port | Description |
+|-----------|-------|------|-------------|
+| `hermes` | nousresearch/hermes-agent | 8642, 9119 | Primary AI interface (replaces Claude Code), reachable via Telegram. Dashboard at `:9119`. |
+| `mem0` | built locally from `mem0ai/mem0@v2.2.1` | 8888 | Hermes's external memory provider. Built locally because the published image is arm64-only; Voyager is x86_64. |
+| `mem0-postgres` | pgvector/pgvector:pg17 | — | Vector store backing Mem0. |
+
 ---
 
 ## Setup
@@ -55,6 +63,10 @@ The Hawser token is generated in the Dockhand UI on Borg:
 4. `docker compose restart hawser`
 
 The token is stored as an Argon2 hash in Dockhand's SQLite DB on Borg.
+
+### Hermes / Mem0 First-Time Setup
+
+See `docs/superpowers/plans/2026-10-04-hermes-agent-migration.md` (dotfiles repo) Tasks 6-10 for the full one-time setup: adding real secrets via `anval`, Telegram bot registration, the Mem0 plugin install inside the running Hermes container, and the one-time memory migration script.
 
 ---
 
