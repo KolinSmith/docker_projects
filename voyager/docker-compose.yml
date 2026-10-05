@@ -243,8 +243,11 @@ services:
       JWT_SECRET: ${MEM0_JWT_SECRET}
       AUTH_DISABLED: "false"
       OPENAI_API_KEY: ${MEM0_OPENAI_API_KEY}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-      MEM0_DEFAULT_LLM_MODEL: claude-sonnet-5
+      # Mem0's own server hardcodes llm.provider="openai" in its DEFAULT_CONFIG (server/main.py) --
+      # ANTHROPIC_API_KEY here is unused dead config, and MEM0_DEFAULT_LLM_MODEL must name a real
+      # OpenAI model (an Anthropic model name 404s against api.openai.com). Discovered via live
+      # deployment testing, 2026-10-05.
+      MEM0_DEFAULT_LLM_MODEL: gpt-5-mini
       MEM0_DEFAULT_EMBEDDER_MODEL: text-embedding-3-small
       MEM0_TELEMETRY: "false"
     security_opt:
