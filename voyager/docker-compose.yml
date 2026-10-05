@@ -123,9 +123,14 @@ services:
       HERMES_DASHBOARD: "0"
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      # Consumed by Task 8's Mem0 plugin config (MEM0_API_KEY), not by Hermes
-      # directly -- same value as mem0's own ADMIN_API_KEY below.
-      MEM0_ADMIN_API_KEY: ${MEM0_ADMIN_API_KEY}
+      # Hermes's Mem0 plugin reads these directly from the service
+      # environment -- `hermes memory status` explicitly warns that
+      # gateway/systemd services don't inherit ~/.hermes/.env, so a
+      # mem0.json config file is NOT the right mechanism here. Same secret
+      # value as mem0's own ADMIN_API_KEY, just under the plugin's expected
+      # var name. Discovered via live deployment testing, 2026-10-05.
+      MEM0_API_KEY: ${MEM0_ADMIN_API_KEY}
+      MEM0_HOST: http://mem0:8000
     volumes:
       # Shared with the ~/.hermes symlink into dotfiles/.hermes (skills are
       # git-tracked there; everything else under ~/.hermes is gitignored).
