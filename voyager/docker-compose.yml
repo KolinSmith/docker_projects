@@ -123,6 +123,12 @@ services:
       HERMES_DASHBOARD: "0"
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      # Kolin's numeric Telegram user ID (not a secret -- just an allowlist
+      # entry; usernames can change, IDs don't, which is why Hermes keys
+      # on this instead of @kolinsmith). Without this the gateway denies
+      # all senders by default. Discovered via live deployment testing,
+      # 2026-10-05.
+      TELEGRAM_ALLOWED_USERS: "8650013105"
       # Hermes's Mem0 plugin reads these directly from the service
       # environment -- `hermes memory status` explicitly warns that
       # gateway/systemd services don't inherit ~/.hermes/.env, so a
