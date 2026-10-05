@@ -112,9 +112,15 @@ services:
     command: gateway run
     ports:
       - "8642:8642"  # gateway API
-      - "9119:9119"  # dashboard
     environment:
-      HERMES_DASHBOARD: "1"
+      # Dashboard disabled: Hermes refuses to bind it to 0.0.0.0 without a
+      # configured auth provider (password/OAuth), and even bound to
+      # loopback it crash-loops its own sub-service retrying the bind.
+      # Telegram is the actual intended interface here -- no need to stand
+      # up dashboard auth for something not otherwise required. Nothing in
+      # the rest of this plan depends on the dashboard; Task 8's setup is
+      # CLI-based. Discovered via live deployment testing, 2026-10-04.
+      HERMES_DASHBOARD: "0"
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       # Consumed by Task 8's Mem0 plugin config (MEM0_API_KEY), not by Hermes
@@ -133,8 +139,19 @@ services:
       - /home/dax/code_base/docker_projects:/data/docker_projects:ro
     security_opt:
       - no-new-privileges:true
-    cap_drop:
-      - ALL
+    # NOT running cap_drop: [ALL] here, unlike every other service in this
+    # file except hawser. Tried CHOWN+SETGID+SETUID (needed to get past the
+    # first two startup failures) but hit a third wall: s6-overlay's
+    # internal supervision tree (/run/service, supervise/lock) kept failing
+    # with further permission errors under a minimal capability set --
+    # its PID1 init expects substantially broader privileges than a typical
+    # app container. Chasing this capability-by-capability turned into an
+    # open-ended rabbit hole specific to this image's internal architecture,
+    # not a security requirement worth brute-forcing further. hawser is
+    # already this file's one documented cap_drop exception (needs the
+    # Docker socket); hermes is a second, for a different reason.
+    # no-new-privileges and the narrow read-only bind mounts above remain
+    # in place regardless. Discovered via live deployment testing, 2026-10-04.
     deploy:
       resources:
         limits:
@@ -194,6 +211,13 @@ services:
     command: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"
     ports:
       - "8888:8000"  # manual debugging only -- Hermes reaches this over the internal network as http://mem0:8000
+    volumes:
+      # Mem0's own internal request-history SQLite DB (separate from the
+      # pgvector store) -- the upstream dev-compose bind-mounts this same
+      # path; without it the app crashes on startup trying to open a
+      # nonexistent/unwritable history db. Discovered via live deployment
+      # testing, 2026-10-04.
+      - ./mem0_history:/app/history
     depends_on:
       mem0-postgres:
         condition: service_healthy
