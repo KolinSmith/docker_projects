@@ -744,38 +744,6 @@ services:
 
 ####################################################################################################
 
-  it-tools: #https://github.com/CorentinTh/it-tools
-    image: corentinth/it-tools:latest
-    container_name: it-tools
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    networks:
-      - proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      - "traefik.http.routers.it-tools-homedomain.entrypoints=websecure"
-      - "traefik.http.routers.it-tools-homedomain.rule=Host(`tools.${SEARCH_DOMAIN}`)"
-      - "traefik.http.routers.it-tools-homedomain.tls.certresolver=cloudflare"
-      - "traefik.http.routers.it-tools-homedomain.service=it-tools-service"
-      - "traefik.http.services.it-tools-service.loadbalancer.server.port=80"
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1m"
-        max-file: "2"
-
-####################################################################################################
-
   landing:
     image: nginx:alpine
     container_name: landing
