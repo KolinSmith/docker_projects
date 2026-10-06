@@ -21,9 +21,12 @@
 # factory default, not a secret Kolin set deliberately -- confirmed working via a
 # live snmpget. It's acceptable for now since the card is only reachable on the
 # internal 192.168.9.x server VLAN, but it should eventually be changed to a
-# custom read-only community string on the card itself and updated here (the
-# snmp_exporter config format bakes the community into this file rather than
-# supporting .env-style substitution, same constraint noted for prometheus.yml).
+# custom read-only community string on the card itself. When that happens, do NOT
+# just edit the new string into this tracked file in place -- that commits a real
+# credential to git. Instead: gitignore this file once it holds a real secret,
+# commit a snmp.yml.example with "public" left as the placeholder (matching every
+# other secret in this project's .env.example), and regenerate/edit the real,
+# untracked snmp.yml on the box directly.
 #
 # WARNING: This file was auto-generated using snmp_exporter generator, manual changes will be lost.
 auths:

@@ -201,6 +201,15 @@ services:
       net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/grafana.png"
       net.unraid.docker.webui: "http://[IP]:[PORT:3003]/"
 
+    environment:
+      # Grafana only reads this on first-ever startup, to create the initial admin
+      # account -- it does NOT change an already-existing admin password (so adding
+      # this now is safe, it won't touch the live, already-rotated password). Its
+      # real purpose: if grafana_data is ever recreated from scratch, Grafana
+      # recreates the admin account with THIS password instead of silently
+      # reverting to admin/admin with no record a real password was ever set.
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
+
     volumes:
       - ./grafana_datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
       - grafana_data:/var/lib/grafana
