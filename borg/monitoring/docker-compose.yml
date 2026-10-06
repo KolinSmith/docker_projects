@@ -130,7 +130,13 @@ services:
                   # the image's default "nobody" user can't traverse into or read the
                   # bind-mounted prometheus.yml there. Running as root matches the
                   # owning UID, so the existing owner-read bit is enough without any
-                  # extra capability (cap_drop: ALL below still applies).
+                  # extra capability for THIS file. (The DAC_OVERRIDE add below is a
+                  # second-order consequence of this line, not a second independent
+                  # FAT issue -- see that comment. Tried Compose's non-Swarm `configs:`
+                  # construct as a root-free alternative for just this file; the
+                  # classic Docker Engine implements it as a plain bind mount and
+                  # silently ignores `mode`/`uid`/`gid`, so it hits the same FAT
+                  # permission wall. See README's "Known hardening TODO".)
 
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -150,12 +156,17 @@ services:
       - ALL
 
     cap_add:
-      - DAC_OVERRIDE  # the prom/prometheus image's own VOLUME setup owns /prometheus
-                        # as uid/gid 65534 (nobody) mode 755 -- running as root (above)
-                        # still isn't in that owning group, so writing the TSDB data dir
-                        # under cap_drop: ALL needs this one capability back. Everything
-                        # else about the hardening (no-new-privileges, dropped caps
-                        # otherwise) stays as-is.
+      - DAC_OVERRIDE  # Needed only because of `user: "0:0"` above, not an independent
+                        # platform constraint: prometheus_data is an ordinary Docker-
+                        # managed named volume (not under /boot, no FAT involved) and
+                        # the image's own VOLUME setup already owns /prometheus as
+                        # uid/gid 65534 (nobody) mode 755 -- the STOCK "nobody" user
+                        # would read/write it fine with zero extra capabilities. It's
+                        # only switching the process to root (0:0), to work around the
+                        # separate /boot config-file read problem, that puts us outside
+                        # that owning uid/gid and triggers this second-order need.
+                        # Everything else about the hardening (no-new-privileges,
+                        # dropped caps otherwise) stays as-is.
 
 volumes:
   prometheus_data: {}
