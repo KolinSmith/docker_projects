@@ -13,6 +13,40 @@ compose file now instead).
 See `docs/superpowers/specs/2026-10-05-borg-monitoring-stack-design.md` (dotfiles repo)
 for the full design and rationale.
 
+## Status
+
+Deployed and verified 2026-10-06. All 7 services (`beszel-agent`, `beszel-socket-proxy`,
+`cadvisor`, `nvidia-gpu-exporter`, `snmp-exporter`, `prometheus`, `grafana`) running under
+the `monitoring_stack` compose project. Prometheus `/targets` shows all 4 scrape targets
+(`apc-ups`, `cadvisor`, `node-exporter`, `nvidia-gpu-exporter`) `UP`. Beszel hub on
+Voyager confirmed actively reporting Borg (live SSH session, not just "container up").
+
+Dashboards actually imported into Grafana (confirmed by checking each panel's underlying
+query against live Prometheus data, not just "import succeeded"):
+
+- **Node Exporter Full** -- dashboard ID `1860`
+- **Nvidia GPU Metrics** -- dashboard ID `14574` (picked after grepping several
+  candidates for real `nvidia_smi_*` metric coverage)
+- **cAdvisor** -- dashboard ID `14282` (ID `893` was tried first, found to query
+  pre-rename metric names this stack's exporters don't expose, deleted and replaced)
+- **APC UPS** -- no public dashboard matched this stack's custom PowerNet-MIB metric
+  names (`upsAdvOutputActivePower`, `upsAdvOutputLoad`, `upsBasicBatteryStatus`), so this
+  one is hand-built (4 panels: output power, output load, battery status, output power
+  time series), not imported from a public ID.
+
+The APC UPS is reachable at **192.168.9.51** on the internal server VLAN (the
+`snmp-exporter` target address -- not the SNMP community string, which is a separate,
+still-default value; see "Known hardening TODO" below).
+
+Smoke-tested values at deploy time: GPU power draw ~14-16W idle (plausible for an idle
+GTX 1660), UPS output ~240-260W / ~24-26% load with battery status `2` (normal) --
+plausible whole-rack draw on the SMT1500RM2U. The one smoke test not completed: confirming
+the GPU power panel visibly climbs under active Ollama load. Borg's `paperless-ollama`
+container was stopped at verification time, and starting/stopping it is a shared resource
+outside this stack's scope -- left as an open item for Kolin to exercise himself (run an
+Ollama completion and watch the GPU Metrics dashboard) or explicitly authorize in a future
+session.
+
 ## Known hardening TODO
 
 `snmp.yml`'s `apc_ups` module auths with community string `public` against the APC
