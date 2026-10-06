@@ -87,6 +87,28 @@ docker compose pull && docker compose up -d
 
 ## Notes
 
+### Hermes write access to dotfiles
+
+The `/data/dotfiles` mount is `rw` (changed 2026-10-06, Task 11 smoke tests) so
+skills like `up`/`rem`/`checkpoint` can actually commit/push, not just read.
+Three things had to line up for this to work, since a plain `:rw` mount flag
+alone wasn't enough:
+1. `~/.hermes/dotfiles_deploy_key` (rendered by `deploy_docker_env`'s ansible
+   role from `vault_hermes_dotfiles_deploy_key`) -- a dedicated Forgejo deploy
+   key, write-scoped to just the `dotfiles` repo, not Kolin's own key.
+   `GIT_SSH_COMMAND` points at it.
+2. The real gateway/agent process runs as uid 10000, not root -- confirmed via
+   `docker top hermes` (s6-overlay's supervision tree is root, but the actual
+   `hermes gateway run` worker it supervises drops to 10000). The host
+   dotfiles tree is owned by `dax` (uid 1001). `group_add: ["100", "1001"]`
+   joins uid 10000 to the host groups that own it, paired with a one-time
+   `chmod -R g+w` on the tree and `git config core.sharedRepository group`
+   inside the repo so new files/git objects created by either dax or hermes
+   stay group-writable going forward.
+3. `GIT_CONFIG_KEY_0/VALUE_0=safe.directory=/data/dotfiles` -- git's own
+   "dubious ownership" guard, since the committing uid (10000) still isn't
+   the directory's owning uid (1001) even with group write access.
+
 ### Hawser (Dockhand agent)
 
 - Uses edge mode: Hawser connects *outbound* to Dockhand — no ports exposed on Voyager
