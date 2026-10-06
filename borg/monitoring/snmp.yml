@@ -1,0 +1,60 @@
+# APC Smart-UPS (SMT1500RM2U) via AP9630 Network Management Card 2, IP 192.168.9.51.
+#
+# Generated with prom/snmp-exporter's own generator tool (github.com/prometheus/
+# snmp_exporter, generator/), run against the real upstream PowerNet-MIB
+# (https://raw.githubusercontent.com/prometheus-community/snmp/main/apc/PowerNet-MIB,
+# the same MIB_URL the generator's own Makefile fetches, with its documented
+# DisplayString/RFC1213-MIB -> SNMPv2-TC patch applied) plus net-snmp's standard
+# IETF MIBs. The three walked OIDs were confirmed live via `snmpwalk -v2c -c public
+# 192.168.9.51 1.3.6.1.4.1.318.1.1.1...` on 2026-10-06 and resolved to these exact
+# symbolic names using that same MIB -- not guessed from memory.
+#
+# generator.yml module source used to produce this file:
+#   modules:
+#     apc_ups:
+#       walk:
+#         - "PowerNet-MIB::upsAdvOutputActivePower" # 1.3.6.1.4.1.318.1.1.1.4.2.8 -- Watts
+#         - "PowerNet-MIB::upsAdvOutputLoad"        # 1.3.6.1.4.1.318.1.1.1.4.2.3 -- load percent
+#         - "PowerNet-MIB::upsBasicBatteryStatus"   # 1.3.6.1.4.1.318.1.1.1.2.1.1 -- battery status enum
+#
+# SECURITY NOTE: the `community: public` below is the AP9630 card's unconfigured
+# factory default, not a secret Kolin set deliberately -- confirmed working via a
+# live snmpget. It's acceptable for now since the card is only reachable on the
+# internal 192.168.9.x server VLAN, but it should eventually be changed to a
+# custom read-only community string on the card itself and updated here (the
+# snmp_exporter config format bakes the community into this file rather than
+# supporting .env-style substitution, same constraint noted for prometheus.yml).
+#
+# WARNING: This file was auto-generated using snmp_exporter generator, manual changes will be lost.
+auths:
+  public_v2:
+    community: public
+    security_level: noAuthNoPriv
+    auth_protocol: MD5
+    priv_protocol: DES
+    version: 2
+modules:
+  apc_ups:
+    get:
+    - 1.3.6.1.4.1.318.1.1.1.2.1.1.0
+    - 1.3.6.1.4.1.318.1.1.1.4.2.3.0
+    - 1.3.6.1.4.1.318.1.1.1.4.2.8.0
+    metrics:
+    - name: upsBasicBatteryStatus
+      oid: 1.3.6.1.4.1.318.1.1.1.2.1.1
+      type: gauge
+      help: The status of the UPS batteries - 1.3.6.1.4.1.318.1.1.1.2.1.1
+      enum_values:
+        1: unknown
+        2: batteryNormal
+        3: batteryLow
+        4: batteryInFaultCondition
+        5: noBatteryPresent
+    - name: upsAdvOutputLoad
+      oid: 1.3.6.1.4.1.318.1.1.1.4.2.3
+      type: gauge
+      help: The current UPS load expressed in percent of rated capacity. - 1.3.6.1.4.1.318.1.1.1.4.2.3
+    - name: upsAdvOutputActivePower
+      oid: 1.3.6.1.4.1.318.1.1.1.4.2.8
+      type: gauge
+      help: The total output active power of the UPS system in W - 1.3.6.1.4.1.318.1.1.1.4.2.8

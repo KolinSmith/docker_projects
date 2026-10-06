@@ -103,3 +103,59 @@ services:
 
     cap_drop:
       - ALL
+
+  snmp-exporter:
+    image: prom/snmp-exporter:v0.26.0
+    container_name: snmp-exporter
+    restart: unless-stopped
+
+    volumes:
+      - ./snmp.yml:/etc/snmp_exporter/snmp.yml:ro
+
+    ports:
+      - "9116:9116"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    restart: unless-stopped
+    user: "0:0"  # /boot (Unraid's flash share) is FAT-formatted with fixed, non-
+                  # chmod-able dir/file modes (700/600, root:root all the way down) --
+                  # the image's default "nobody" user can't traverse into or read the
+                  # bind-mounted prometheus.yml there. Running as root matches the
+                  # owning UID, so the existing owner-read bit is enough without any
+                  # extra capability (cap_drop: ALL below still applies).
+
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=30d'
+
+    ports:
+      - "9090:9090"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    cap_add:
+      - DAC_OVERRIDE  # the prom/prometheus image's own VOLUME setup owns /prometheus
+                        # as uid/gid 65534 (nobody) mode 755 -- running as root (above)
+                        # still isn't in that owning group, so writing the TSDB data dir
+                        # under cap_drop: ALL needs this one capability back. Everything
+                        # else about the hardening (no-new-privileges, dropped caps
+                        # otherwise) stays as-is.
+
+volumes:
+  prometheus_data: {}
