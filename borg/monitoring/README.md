@@ -42,3 +42,14 @@ the resulting container's mounts), so it hits the exact same FAT permission wall
 doesn't help. Revisit if/when: (a) this project's live files move off `/boot` to a
 normal filesystem, or (b) Swarm mode (where `configs:` is a real first-class object,
 not a bind mount) becomes an option.
+
+`grafana` hits the identical FAT-on-`/boot` wall and carries the same `user: "0:0"` +
+`cap_add: [DAC_OVERRIDE]` deviation, for the same reason: `grafana_datasources.yml` is
+bind-mounted from this project's live directory (confirmed 700/600 root:root, same as
+`prometheus.yml`), and the image's default non-root `grafana` user (472:472) can't read
+it. Checked whether Grafana's default user already had access before adding this --
+it didn't (the directory listing itself was `Permission denied` as the non-root
+deploy user, let alone inside the container). Everything else about Grafana's
+hardening (`no-new-privileges`, `cap_drop: ALL` otherwise) stays as-is; `grafana_data`
+(the named volume) doesn't need root -- it's a normal Docker-managed volume the stock
+`grafana` user already owns. Same revisit conditions as prometheus's entry above.

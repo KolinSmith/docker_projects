@@ -168,5 +168,39 @@ services:
                         # Everything else about the hardening (no-new-privileges,
                         # dropped caps otherwise) stays as-is.
 
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    restart: unless-stopped
+    user: "0:0"  # Same FAT-on-/boot constraint documented above for prometheus:
+                  # grafana_datasources.yml is bind-mounted from this project's live
+                  # directory under /boot, which is 700/600 root:root all the way down
+                  # and can't be chmod'd. The image's default non-root `grafana` user
+                  # (472:472) can't read it. Root matches the owning uid, same fix as
+                  # prometheus. grafana_data (the named volume) doesn't need this --
+                  # it's an ordinary Docker-managed volume the stock `grafana` user
+                  # already owns -- but DAC_OVERRIDE below is needed for the same
+                  # second-order reason as prometheus's. See README's "Known hardening
+                  # TODO".
+
+    volumes:
+      - ./grafana_datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - grafana_data:/var/lib/grafana
+
+    ports:
+      - "3003:3000"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    cap_add:
+      - DAC_OVERRIDE  # Second-order consequence of `user: "0:0"` above, not an
+                        # independent platform constraint -- same reasoning as
+                        # prometheus's DAC_OVERRIDE.
+
 volumes:
   prometheus_data: {}
+  grafana_data: {}
