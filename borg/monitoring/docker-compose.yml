@@ -73,6 +73,10 @@ services:
                        # alone isn't sufficient for this image; documented exception to
                        # the cap_drop pattern, same class as hermes/hawser elsewhere.
 
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/cadvisor.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8081]/"
+
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
@@ -91,6 +95,9 @@ services:
     restart: unless-stopped
     runtime: nvidia
 
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nvidia.png"
+
     environment:
       NVIDIA_VISIBLE_DEVICES: "${NVIDIA_GPU_UUID}"
       NVIDIA_DRIVER_CAPABILITIES: all
@@ -108,6 +115,9 @@ services:
     image: prom/snmp-exporter:v0.26.0
     container_name: snmp-exporter
     restart: unless-stopped
+
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/apc.png"
 
     volumes:
       - ./snmp.yml:/etc/snmp_exporter/snmp.yml:ro
@@ -137,6 +147,10 @@ services:
                   # classic Docker Engine implements it as a plain bind mount and
                   # silently ignores `mode`/`uid`/`gid`, so it hits the same FAT
                   # permission wall. See README's "Known hardening TODO".)
+
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/prometheus.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:9090]/"
 
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -182,6 +196,10 @@ services:
                   # already owns -- but DAC_OVERRIDE below is needed for the same
                   # second-order reason as prometheus's. See README's "Known hardening
                   # TODO".
+
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/grafana.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:3003]/"
 
     volumes:
       - ./grafana_datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
