@@ -955,6 +955,10 @@ engines:
     engine: genius
     shortcut: gen
 
+  - name: grokipedia
+    engine: grokipedia
+    shortcut: gro
+
   - name: gentoo
     engine: mediawiki
     shortcut: ge
