@@ -1191,6 +1191,16 @@ engines:
     shortcut: iq
     disabled: true
 
+  - name: jina
+    engine: jina
+    shortcut: ji
+    categories: [general, web]
+    # Real value injected by deploy_docker_env from vault_searxng_jina_api_key
+    # (ansible_projects) -- previously only ever a one-off manual sed on the
+    # live host, never vaulted or automated, until 2026-10-08.
+    api_key: "REDACTED_JINA_API_KEY"
+    jina_engine: reader
+
   - name: jisho
     engine: jisho
     shortcut: js
@@ -1301,11 +1311,11 @@ engines:
   - name: marginalia
     engine: marginalia
     shortcut: mar
-    # To get an API key, please follow the instructions at
-    # - https://about.marginalia-search.com/article/api/
-    # api_key: ...
-    disabled: true
-    inactive: true
+    # Real value injected by deploy_docker_env from vault_searxng_marginalia_api_key
+    # (ansible_projects). Was "public" (Marginalia's shared free/rate-limited key,
+    # https://about.marginalia-search.com/article/api/) until 2026-10-08, when
+    # Kolin got his own free key -- better rate limits, same no-custom-filters tier.
+    api_key: "REDACTED_MARGINALIA_API_KEY"
 
   - name: mastodon users
     engine: mastodon
@@ -1398,7 +1408,10 @@ engines:
     engine: mwmbl
     # api_url: https://api.mwmbl.org
     shortcut: mwm
-    disabled: true
+    # Tried enabling 2026-09-30, hit a real bug (mwmbl.py line 46, IndexError
+    # when a result lacks an 'extract' entry). The 2026-10-01 SearXNG image
+    # upgrade's mwmbl.py now uses result.get('extract', []) -- looks fixed
+    # upstream. Re-enabling to verify live.
 
   - name: niconico
     engine: niconico
@@ -1761,6 +1774,11 @@ engines:
     categories: [general, web]
     additional_tests:
       rosebud: *test_rosebud
+    # Disabled 2026-10-01: hard CAPTCHA wall (SearxEngineCaptchaException),
+    # no API/key workaround exists in the engine, and the index is still
+    # only partially independent of Bing today. See
+    # dotfiles/.claude/plans/2026-09-30-searxng-engine-blocking.md.
+    disabled: true
 
   - name: qwant news
     qwant_categ: news
@@ -1768,6 +1786,7 @@ engines:
     shortcut: qwn
     categories: news
     network: qwant
+    disabled: true
 
   - name: qwant images
     qwant_categ: images
@@ -1775,6 +1794,7 @@ engines:
     shortcut: qwi
     categories: [images, web]
     network: qwant
+    disabled: true
 
   - name: qwant videos
     qwant_categ: videos
@@ -1782,6 +1802,7 @@ engines:
     shortcut: qwv
     categories: [videos, web]
     network: qwant
+    disabled: true
 
   # - name: library
   #   engine: recoll
