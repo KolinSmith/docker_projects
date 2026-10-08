@@ -1675,6 +1675,10 @@ engines:
       # image proxy of https://pixiv.perennialte.ch
       # - https://pximg.perennialte.ch
 
+  - name: privacywall
+    engine: privacywall
+    shortcut: pw
+
   - name: podcastindex
     engine: podcastindex
     shortcut: podcast
