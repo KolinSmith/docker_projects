@@ -1,0 +1,233 @@
+name: monitoring_stack
+
+services:
+
+  beszel-socket-proxy:
+    image: lscr.io/linuxserver/socket-proxy:latest
+    container_name: beszel-socket-proxy
+    restart: unless-stopped
+    read_only: true
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f50c.png"
+
+    tmpfs:
+      - /run
+
+    ports:
+      - "127.0.0.1:2375:2375"
+
+    environment:
+      CONTAINERS: 1
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    user: "1000:1000"
+    network_mode: host
+
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/henrygd/beszel/main/internal/site/public/static/icon.png"
+
+    depends_on:
+      - beszel-socket-proxy
+
+    environment:
+      PORT: 45876
+      KEY: "${BESZEL_AGENT_KEY}"
+      DOCKER_HOST: tcp://127.0.0.1:2375
+
+    volumes:
+      - /mnt/disks/appdataAndDocker/appdata/beszel-agent:/var/lib/beszel-agent
+      - /:/host:ro
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+      - SYS_PTRACE
+      - NET_ADMIN
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.2
+    container_name: cadvisor
+    restart: unless-stopped
+    privileged: true  # cgroup/Docker introspection needs real host access -- cap_add
+                       # alone isn't sufficient for this image; documented exception to
+                       # the cap_drop pattern, same class as hermes/hawser elsewhere.
+
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/cadvisor.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8081]/"
+
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+
+    ports:
+      - "8081:8080"  # host 8080 is already binhex-sabnzbd -- confirmed via `ss -tlnp`
+                      # on Borg before writing this plan; container's own internal port
+                      # stays 8080, only the host-side mapping moves to 8081
+
+  nvidia-gpu-exporter:
+    image: utkuozdemir/nvidia_gpu_exporter:1.3.1
+    container_name: nvidia-gpu-exporter
+    restart: unless-stopped
+    runtime: nvidia
+
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nvidia.png"
+
+    environment:
+      NVIDIA_VISIBLE_DEVICES: "${NVIDIA_GPU_UUID}"
+      NVIDIA_DRIVER_CAPABILITIES: all
+
+    ports:
+      - "9835:9835"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+  snmp-exporter:
+    image: prom/snmp-exporter:v0.26.0
+    container_name: snmp-exporter
+    restart: unless-stopped
+
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/apc.png"
+
+    volumes:
+      - ./snmp.yml:/etc/snmp_exporter/snmp.yml:ro
+
+    ports:
+      - "9116:9116"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    restart: unless-stopped
+    user: "0:0"  # /boot (Unraid's flash share) is FAT-formatted with fixed, non-
+                  # chmod-able dir/file modes (700/600, root:root all the way down) --
+                  # the image's default "nobody" user can't traverse into or read the
+                  # bind-mounted prometheus.yml there. Running as root matches the
+                  # owning UID, so the existing owner-read bit is enough without any
+                  # extra capability for THIS file. (The DAC_OVERRIDE add below is a
+                  # second-order consequence of this line, not a second independent
+                  # FAT issue -- see that comment. Tried Compose's non-Swarm `configs:`
+                  # construct as a root-free alternative for just this file; the
+                  # classic Docker Engine implements it as a plain bind mount and
+                  # silently ignores `mode`/`uid`/`gid`, so it hits the same FAT
+                  # permission wall. See README's "Known hardening TODO".)
+
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/prometheus.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:9090]/"
+
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=30d'
+
+    ports:
+      - "9090:9090"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    cap_add:
+      - DAC_OVERRIDE  # Needed only because of `user: "0:0"` above, not an independent
+                        # platform constraint: prometheus_data is an ordinary Docker-
+                        # managed named volume (not under /boot, no FAT involved) and
+                        # the image's own VOLUME setup already owns /prometheus as
+                        # uid/gid 65534 (nobody) mode 755 -- the STOCK "nobody" user
+                        # would read/write it fine with zero extra capabilities. It's
+                        # only switching the process to root (0:0), to work around the
+                        # separate /boot config-file read problem, that puts us outside
+                        # that owning uid/gid and triggers this second-order need.
+                        # Everything else about the hardening (no-new-privileges,
+                        # dropped caps otherwise) stays as-is.
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    restart: unless-stopped
+    user: "0:0"  # Same FAT-on-/boot constraint documented above for prometheus:
+                  # grafana_datasources.yml is bind-mounted from this project's live
+                  # directory under /boot, which is 700/600 root:root all the way down
+                  # and can't be chmod'd. The image's default non-root `grafana` user
+                  # (472:472) can't read it. Root matches the owning uid, same fix as
+                  # prometheus. grafana_data (the named volume) doesn't need this --
+                  # it's an ordinary Docker-managed volume the stock `grafana` user
+                  # already owns -- but DAC_OVERRIDE below is needed for the same
+                  # second-order reason as prometheus's. See README's "Known hardening
+                  # TODO".
+
+    labels:
+      net.unraid.docker.icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/grafana.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:3003]/"
+
+    environment:
+      # Grafana only reads this on first-ever startup, to create the initial admin
+      # account -- it does NOT change an already-existing admin password (so adding
+      # this now is safe, it won't touch the live, already-rotated password). Its
+      # real purpose: if grafana_data is ever recreated from scratch, Grafana
+      # recreates the admin account with THIS password instead of silently
+      # reverting to admin/admin with no record a real password was ever set.
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
+
+    volumes:
+      - ./grafana_datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - grafana_data:/var/lib/grafana
+
+    ports:
+      - "3003:3000"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    cap_add:
+      - DAC_OVERRIDE  # Second-order consequence of `user: "0:0"` above, not an
+                        # independent platform constraint -- same reasoning as
+                        # prometheus's DAC_OVERRIDE.
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}

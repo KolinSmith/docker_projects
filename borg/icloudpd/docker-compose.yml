@@ -1,0 +1,68 @@
+name: icloudpd
+
+# icloudpd (icloud-photos-downloader) — pulls the iCloud Photo Library down to
+# borg as an incremental backup: originals, EXIF, RAW, Live Photos. It only ever
+# ADDS files (no --auto-delete) so photos deleted in iCloud stay in the backup.
+#
+# Data lands in /mnt/user/media/iCloudPhotos/ -- a REAL, pre-existing backup
+# location discovered 2026-10-02 with 244GB of real photos (2008 through
+# 2026-03-17), from an earlier icloudpd setup that was never committed to
+# this repo and stopped when its Apple 2FA session expired and was never
+# renewed. Confirmed /mnt/disks/HUB/BACKUPS/iCloud_Backup is already a mirror
+# of this exact directory (identical files/timestamps), so it's already
+# covered off-site -- no need to redirect to a fresh location.
+#
+# The MFA/session cookie lives in /config (appdata) and MUST persist. Apple's
+# 2FA session lasts ~60 days; when it expires the container logs an auth error
+# and waits — re-auth through the web UI on ICLOUDPD_WEBUI_PORT (or
+# `docker exec -it icloudpd icloudpd --username <id> --password <pw> --auth-only`).
+#
+# See ./README.md for first-run setup.
+
+services:
+  icloudpd:
+    image: icloudpd/icloudpd:latest
+    container_name: icloudpd
+    restart: unless-stopped
+    labels:
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/icloud-photos-downloader/icloud_photos_downloader/master/icloudpd-logo.png"
+      net.unraid.docker.webui: "http://[IP]:[PORT:8080]/"
+    environment:
+      TZ: ${TZ:-America/Chicago}
+    ports:
+      # icloudpd web UI — enter the Apple ID password + 2FA code here
+      - "${ICLOUDPD_WEBUI_PORT:-8579}:8080"
+    volumes:
+      # session cookie + keyring — persistent, do NOT make this ephemeral
+      - /mnt/disks/appdataAndDocker/appdata/icloudpd/config:/config
+      # download target -- the real, pre-existing backup location (see note
+      # above), already mirrored off-site to /mnt/disks/HUB/BACKUPS/iCloud_Backup
+      - /mnt/user/media/iCloudPhotos:/data
+    # NB: the image entrypoint needs "icloudpd" (or "icloud") as the first arg.
+    # NB 2: this image's CLI uses a custom parser (not argparse) that rejects
+    # --flag=value form for at least --username (fails "unrecognized
+    # arguments"), confirmed 2026-10-02 against the current :latest image --
+    # use space-separated "--flag", "value" pairs throughout instead.
+    command:
+      - icloudpd
+      - --username
+      - ${APPLE_ID}
+      - --directory
+      - /data
+      - --cookie-directory
+      - /config
+      - --folder-structure
+      - "{:%Y/%m/%d}"
+      - --size
+      - original
+      - --align-raw
+      - original
+      - --live-photo-size
+      - original
+      - --set-exif-datetime
+      - --password-provider
+      - webui
+      - --mfa-provider
+      - webui
+      - --watch-with-interval
+      - ${WATCH_INTERVAL:-21600}
