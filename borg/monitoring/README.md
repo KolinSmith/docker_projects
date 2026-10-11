@@ -10,7 +10,7 @@ compose file now instead).
 2. `docker compose up -d`
 3. Grafana: `http://<borg-ip>:3003`. Prometheus: `http://<borg-ip>:9090`.
 
-See `docs/superpowers/specs/2026-10-05-borg-monitoring-stack-design.md` (dotfiles repo)
+See `.claude/specs/2026-10-05-borg-monitoring-stack-design.md` (dotfiles repo)
 for the full design and rationale.
 
 ## Status
