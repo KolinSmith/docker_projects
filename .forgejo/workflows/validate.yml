@@ -135,7 +135,11 @@ jobs:
           api   = os.environ["API_BASE"]
           repo  = os.environ["REPO"]
           pr    = os.environ["PR_NUMBER"]
-          hdrs  = {"Authorization": f"token {token}", "Content-Type": "application/json"}
+          # Explicit User-Agent: the public Forgejo domain 403s requests that carry
+          # Python urllib's default "Python-urllib/3.x" UA even with a valid token
+          # (curl and any custom UA get 200). Without this the comment fetch fails.
+          hdrs  = {"Authorization": f"token {token}", "Content-Type": "application/json",
+                   "User-Agent": "forgejo-ci-code-stats/1.0"}
 
           def req(method, url, data=None):
               r = urllib.request.Request(url, data=data, headers=hdrs, method=method)

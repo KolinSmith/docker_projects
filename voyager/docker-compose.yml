@@ -94,6 +94,201 @@ services:
         max-size: "5m"
         max-file: "3"
 
+  hermes:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes
+    restart: unless-stopped
+    command: gateway run
+    ports:
+      - "8642:8642"  # gateway API
+    environment:
+      # Dashboard disabled: Hermes refuses to bind it to 0.0.0.0 without a
+      # configured auth provider (password/OAuth), and even bound to
+      # loopback it crash-loops its own sub-service retrying the bind.
+      # Telegram is the actual intended interface here -- no need to stand
+      # up dashboard auth for something not otherwise required. Nothing in
+      # the rest of this plan depends on the dashboard; Task 8's setup is
+      # CLI-based. Discovered via live deployment testing, 2026-10-04.
+      HERMES_DASHBOARD: "0"
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      # Kolin's numeric Telegram user ID (not a secret -- just an allowlist
+      # entry; usernames can change, IDs don't, which is why Hermes keys
+      # on this instead of @kolinsmith). Without this the gateway denies
+      # all senders by default. Discovered via live deployment testing,
+      # 2026-10-05.
+      TELEGRAM_ALLOWED_USERS: "8650013105"
+      # Hermes's Mem0 plugin reads these directly from the service
+      # environment -- `hermes memory status` explicitly warns that
+      # gateway/systemd services don't inherit ~/.hermes/.env, so a
+      # mem0.json config file is NOT the right mechanism here. Same secret
+      # value as mem0's own ADMIN_API_KEY, just under the plugin's expected
+      # var name. Discovered via live deployment testing, 2026-10-05.
+      MEM0_API_KEY: ${MEM0_ADMIN_API_KEY}
+      MEM0_HOST: http://mem0:8000
+      # Lets skill-driven git operations (e.g. the `up` skill committing to
+      # .claude/progress-logs) push over SSH using the dedicated deploy key
+      # below, instead of needing Kolin's own key. Key is write-scoped to
+      # the dotfiles repo only (Forgejo deploy key, added 2026-10-06).
+      GIT_SSH_COMMAND: "ssh -i /opt/data/dotfiles_deploy_key -o UserKnownHostsFile=/opt/data/dotfiles_known_hosts -o StrictHostKeyChecking=accept-new"
+      GIT_AUTHOR_NAME: "Hermes Agent"
+      GIT_AUTHOR_EMAIL: "hermes-agent@voyager.local"
+      GIT_COMMITTER_NAME: "Hermes Agent"
+      GIT_COMMITTER_EMAIL: "hermes-agent@voyager.local"
+      # The actual gateway/agent process runs as uid 10000 (confirmed via
+      # `docker top` -- s6-overlay's supervision tree is root, but the real
+      # `hermes gateway run` worker it supervises drops to 10000), not root
+      # and not dax (1001) who owns /data/dotfiles on the host. git's
+      # "dubious ownership" guard would otherwise refuse every operation
+      # there even once group_add below grants the write bits themselves.
+      GIT_CONFIG_COUNT: "1"
+      GIT_CONFIG_KEY_0: "safe.directory"
+      GIT_CONFIG_VALUE_0: "/data/dotfiles"
+    # Joins the host groups that actually own the dotfiles tree (dax's
+    # primary "users" gid 100, and "admin" gid 1001 which owns the repo's
+    # top level/.git) so uid 10000 can write there -- a plain :rw mount flag
+    # alone isn't enough when the running uid has no group overlap with the
+    # host-side file ownership. Paired with `chmod -R g+w` on the host tree
+    # and `core.sharedRepository=group` on the repo itself (see docker_projects
+    # README/this PR's description) so new files/git objects stay
+    # group-writable too, not just the ones that existed at setup time.
+    group_add:
+      - "100"
+      - "1001"
+    volumes:
+      # Shared with the ~/.hermes symlink into dotfiles/.hermes (skills are
+      # git-tracked there; everything else under ~/.hermes is gitignored).
+      # Also now holds dotfiles_deploy_key (see environment: above).
+      - ${HOME}/.hermes:/opt/data
+      # Read-only live access to the content Claude Code reads today --
+      # deliberately NOT migrated into Mem0 (see spec's memory migration
+      # scope). Narrow by design: only what Hermes actually needs to read.
+      - /home/dax/wiki:/data/wiki:ro
+      # Read-write (changed 2026-10-06, Task 11 smoke test finding): skills
+      # like `up`/`rem`/`checkpoint` need to commit/push here, which an :ro
+      # mount can never support. Kolin's call -- Forgejo (DMZ) holds the
+      # durable history regardless of what happens to this local tree.
+      - /home/dax/code_base/dotfiles:/data/dotfiles
+      - /home/dax/code_base/ansible_projects:/data/ansible_projects:ro
+      - /home/dax/code_base/docker_projects:/data/docker_projects:ro
+    security_opt:
+      - no-new-privileges:true
+    # NOT running cap_drop: [ALL] here, unlike every other service in this
+    # file except hawser. Tried CHOWN+SETGID+SETUID (needed to get past the
+    # first two startup failures) but hit a third wall: s6-overlay's
+    # internal supervision tree (/run/service, supervise/lock) kept failing
+    # with further permission errors under a minimal capability set --
+    # its PID1 init expects substantially broader privileges than a typical
+    # app container. Chasing this capability-by-capability turned into an
+    # open-ended rabbit hole specific to this image's internal architecture,
+    # not a security requirement worth brute-forcing further. hawser is
+    # already this file's one documented cap_drop exception (needs the
+    # Docker socket); hermes is a second, for a different reason.
+    # no-new-privileges and the narrow read-only bind mounts above remain
+    # in place regardless. Discovered via live deployment testing, 2026-10-04.
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  mem0-postgres:
+    image: pgvector/pgvector:pg17
+    container_name: mem0-postgres
+    restart: unless-stopped
+    shm_size: "128mb"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${MEM0_POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+    volumes:
+      - ./mem0_postgres_data:/var/lib/postgresql/data
+      - /home/dax/docker_data/voyager/mem0-src/server/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d postgres -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+      - FOWNER
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  mem0:
+    build:
+      context: /home/dax/docker_data/voyager/mem0-src/server
+      dockerfile: Dockerfile
+    container_name: mem0
+    restart: unless-stopped
+    command: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8888:8000"  # manual debugging only -- Hermes reaches this over the internal network as http://mem0:8000
+    volumes:
+      # Mem0's own internal request-history SQLite DB (separate from the
+      # pgvector store) -- the upstream dev-compose bind-mounts this same
+      # path; without it the app crashes on startup trying to open a
+      # nonexistent/unwritable history db. Discovered via live deployment
+      # testing, 2026-10-04.
+      - ./mem0_history:/app/history
+    depends_on:
+      mem0-postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: mem0-postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${MEM0_POSTGRES_PASSWORD}
+      POSTGRES_COLLECTION_NAME: memories
+      ADMIN_API_KEY: ${MEM0_ADMIN_API_KEY}
+      JWT_SECRET: ${MEM0_JWT_SECRET}
+      AUTH_DISABLED: "false"
+      OPENAI_API_KEY: ${MEM0_OPENAI_API_KEY}
+      # Mem0's own server hardcodes llm.provider="openai" in its DEFAULT_CONFIG (server/main.py) --
+      # ANTHROPIC_API_KEY here is unused dead config, and MEM0_DEFAULT_LLM_MODEL must name a real
+      # OpenAI model (an Anthropic model name 404s against api.openai.com). Discovered via live
+      # deployment testing, 2026-10-05.
+      MEM0_DEFAULT_LLM_MODEL: gpt-5-mini
+      MEM0_DEFAULT_EMBEDDER_MODEL: text-embedding-3-small
+      MEM0_TELEMETRY: "false"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
   # capture:
   #   image: ghcr.io/bluewave-labs/capture:latest
   #   container_name: capture

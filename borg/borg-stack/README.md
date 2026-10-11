@@ -11,7 +11,7 @@ Full Docker Compose stack for the Borg Unraid server. Covers media management, m
 | Container | Image | Port | Description |
 |-----------|-------|------|-------------|
 | `plex` | plexinc/pms-docker:plexpass | 32400 (host) | Media server. PlexPass with hardware transcoding via Intel QuickSync. |
-| `sabnzbd` | linuxserver/sabnzbd | 8080, 9090 | Usenet downloader. |
+| `sabnzbd` | linuxserver/sabnzbd | 8080, 8090 | Usenet downloader. |
 | `sonarr` | linuxserver/sonarr | 8989 | TV show automation. |
 | `radarr` | linuxserver/radarr | 7878 | Movie automation. |
 | `bazarr` | linuxserver/bazarr | 6767 | Subtitle automation for Sonarr/Radarr. |
@@ -36,8 +36,6 @@ Full Docker Compose stack for the Borg Unraid server. Covers media management, m
 
 | Container | Image | Port | Description |
 |-----------|-------|------|-------------|
-| `beszel-agent` | henrygd/beszel-agent | 45876 (host) | System metrics agent for Beszel monitoring hub. |
-| `dockhand` | fnsys/dockhand | 3004 | Docker management UI. Manages containers on Borg and remote hosts (Voyager via Hawser edge agent). |
 | `scrutiny` | analogj/scrutiny:master-omnibus | 8383 | Disk S.M.A.R.T. monitoring. |
 | `glances` | nicolargo/glances | 61208 (host) | Real-time system resource monitoring. |
 | `dozzle` | amir20/dozzle | 8084 | Docker container log viewer. |
@@ -53,7 +51,7 @@ Full Docker Compose stack for the Borg Unraid server. Covers media management, m
 ### 1. Prerequisites
 
 - Unraid with [Docker Compose Manager plugin](https://forums.unraid.net/topic/114415-plugin-docker-compose-manager/) installed
-- Compose file deployed at: `/boot/config/plugins/compose.manager/projects/docker-compose.yml`
+- Compose file deployed at: `/boot/config/plugins/compose.manager/projects/borg-stack/docker-compose.yml`
 
 ### 2. Configure Environment
 
@@ -66,7 +64,6 @@ Edit `.env` with your values. See the comments in `.env.example` for guidance on
 **Required to change before first run:**
 - `UNRAID_IP` — your Unraid server's IP
 - `PLEX_CLAIM` — get from https://www.plex.tv/claim (expires in 4 minutes)
-- `BESZEL_AGENT_KEY` — SSH public key from your Beszel hub
 - `ICLOUD_APPLE_ID` — your Apple ID email
 - `DOZZLE_PASSWORD` — set a real password
 - `DOZZLE_KEY` — random secret string
@@ -75,14 +72,26 @@ Edit `.env` with your values. See the comments in `.env.example` for guidance on
 
 ### 3. Deploy
 
-**Deploy all services:**
+**⚠️ Do NOT run a broad `docker compose up -d` against this file.** Several containers
+here (`it-tools`, `tautulli`, `binhex-plexpass`, `overseerr`, among others) carry stale or
+entirely missing Docker Compose project labels — leftover from before this project was
+renamed `borg` → `borg_stack` and from containers originally created outside Compose
+entirely (via Unraid's own Docker Manager UI). A blanket `up -d` will try to recreate most
+of this file's ~20 containers, including Plex — this has actually happened and nearly
+caused a real outage. The container-label drift that causes this is a known, deliberately
+deferred issue (a separate reconciliation project), not something fixed by this plan.
+
+**Until that's reconciled, deploy changes by file-sync instead:**
 ```bash
-sudo docker compose -f /boot/config/plugins/compose.manager/projects/docker-compose.yml up -d
+# From your local clone, after editing borg-stack/docker-compose.yml:
+scp borg/borg-stack/docker-compose.yml kolin@<borg-ip>:/tmp/borg-stack-new.yml
+ssh kolin@<borg-ip> "sudo cp /boot/config/plugins/compose.manager/projects/borg-stack/docker-compose.yml /boot/config/plugins/compose.manager/projects/borg-stack/docker-compose.yml.bak-\$(date +%s) && sudo cp /tmp/borg-stack-new.yml /boot/config/plugins/compose.manager/projects/borg-stack/docker-compose.yml && rm /tmp/borg-stack-new.yml"
 ```
 
-**Deploy a single service:**
+**Deploy a single new/changed service** (safe — Compose only acts on the service you name,
+not the whole file):
 ```bash
-sudo docker compose -f /boot/config/plugins/compose.manager/projects/docker-compose.yml up -d plex
+sudo docker compose -f /boot/config/plugins/compose.manager/projects/borg-stack/docker-compose.yml --project-directory /boot/config/plugins/compose.manager/projects/borg-stack up -d <service-name>
 ```
 
 **View logs:**
@@ -109,7 +118,7 @@ Appdata is stored on disk to survive Unraid array restarts. The paths in this co
 
 | Network | Services | Purpose |
 |---------|----------|---------|
-| `host` | beszel-agent, plex, ersatztv, glances | Direct host networking for performance or multicast |
+| `host` | plex, ersatztv, glances | Direct host networking for performance or multicast |
 | `bridge` | Most services | Standard isolated bridge with port mapping |
 | `proxy` | nginxproxymanager, overseerr | Shared network for reverse proxy |
 | `checkmate` (internal) | checkmate, mongodb_checkmate, redis_checkmate | Isolated internal network |
@@ -181,4 +190,5 @@ These will be added in future PRs as they are formalized.
 ## Related
 
 - Paperless-ngx AI stack: [`../paperless/`](../paperless/README.md)
+- Monitoring stack (Prometheus, Grafana, Beszel): [`../monitoring/`](../monitoring/README.md)
 - GPU upgrade plan: [`.claude/plans/2026-03-22-gpu-upgrade.md`](../../.claude/plans/2026-03-22-gpu-upgrade.md)
