@@ -44,3 +44,9 @@ RUN wget -qO /tmp/scc.tar.gz \
     && tar -xzf /tmp/scc.tar.gz -C /tmp scc \
     && install -m 755 /tmp/scc /usr/bin/scc \
     && rm /tmp/scc.tar.gz /tmp/scc
+
+# gitops-pusher — Tailscale ACL GitOps tool. Pinned to the same commit the
+# tailscale/gitops-acl-action@v1 action uses. Built once here so ACL jobs do
+# not download Go modules and compile it on the Orange Pi on every run.
+RUN GOBIN=/usr/bin go install tailscale.com/cmd/gitops-pusher@b4d39e2fd92538384aa7388fdbeda0ec51973bfc \
+    && rm -rf /root/go /root/.cache/go-build
