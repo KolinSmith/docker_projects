@@ -672,7 +672,7 @@
         {
           "datasource": "Prometheus",
           "expr": "rate(tor_relay_load_global_rate_limit_reached_total[5m])",
-          "legendFormat": "rate limit",
+          "legendFormat": "{{side}}",
           "refId": "A"
         }
       ],
@@ -769,13 +769,47 @@
       "options": {}
     },
     {
+      "id": 23,
+      "type": "timeseries",
+      "title": "Sockets",
+      "description": "tor_relay_load_socket_total is a gauge. 'opened' (state=\"opened\") is the current number of open sockets; 'limit' is the unlabeled series, the relay's total socket capacity. Opened approaching limit means socket exhaustion.",
+      "datasource": "Prometheus",
+      "gridPos": {
+        "x": 0,
+        "y": 40,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "tor_relay_load_socket_total{state=\"opened\"}",
+          "legendFormat": "opened",
+          "refId": "A"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "tor_relay_load_socket_total{state=\"\"}",
+          "legendFormat": "limit",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
       "id": 21,
       "type": "row",
       "title": "Host",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 40,
+        "y": 48,
         "w": 24,
         "h": 1
       },
@@ -788,7 +822,7 @@
       "description": "Tor MetricsPort exposes neither CPU nor uptime.",
       "gridPos": {
         "x": 0,
-        "y": 41,
+        "y": 49,
         "w": 24,
         "h": 3
       },
