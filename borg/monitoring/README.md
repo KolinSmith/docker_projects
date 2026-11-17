@@ -111,7 +111,90 @@ To remove the dashboard and the scrape job:
 
 ### Deploying changes to Borg
 
-The live monitoring project on Borg under `/boot/config/plugins/compose.manager/projects/monitoring`
-holds COPIES of this folder, not a git checkout. After merging a change here, copy the files
-over by hand. Compose, prometheus and provider changes need the container recreated or
-restarted; a dashboard JSON change alone is picked up by Grafana's provisioning poll.
+See "Storage layout on Borg" below: the compose file lives in the Compose Manager project
+on `/boot`, every other file is a COPY under `/mnt/disks/appdataAndDocker/appdata`. After
+merging a change here, copy the changed files to their locations by hand. Compose,
+prometheus and provider changes need the container recreated or restarted; a dashboard
+JSON change alone is picked up by Grafana's provisioning poll.
+
+## Storage layout on Borg
+
+Config and data live on Borg's `appdataAndDocker` drive, not on the `/boot` USB flash
+drive and not in Docker named volumes. Only the compose file stays in the Compose Manager
+project directory (it must).
+
+```
+/boot/config/plugins/compose.manager/projects/monitoring/
+  docker-compose.yml                  (and .env)
+/mnt/disks/appdataAndDocker/appdata/
+  prometheus/
+    etc/prometheus.yml                <- prometheus.yml
+    data/                             (TSDB data)
+  grafana/
+    data/                             (grafana.db etc.)
+    provisioning/
+      datasources/datasources.yml     <- grafana_datasources.yml
+      dashboards/dashboards.yml       <- grafana_dashboards.yml
+    dashboards/                       <- dashboards/*
+  snmp-exporter/
+    snmp.yml                          <- snmp.yml
+```
+
+These are copies of the files in this folder, not a git checkout, so after merging a
+change here the files must be copied over by hand.
+
+The `user: "0:0"` / `DAC_OVERRIDE` settings on prometheus and grafana were a workaround
+for the FAT `/boot` layout and are probably no longer needed now that everything is on
+this drive. Removing them is deferred to a separate change.
+
+### Migration from the old layout (one time)
+
+Run on Borg as root/sudo. `PD` is the project dir, `A` is the appdata root.
+
+```
+PD=/boot/config/plugins/compose.manager/projects/monitoring
+A=/mnt/disks/appdataAndDocker/appdata
+```
+
+1. Create the target dirs (`$A/prometheus/etc` and `/data` already exist, empty):
+   ```
+   mkdir -p $A/prometheus/etc $A/prometheus/data $A/grafana/data \
+     $A/grafana/provisioning/datasources $A/grafana/provisioning/dashboards \
+     $A/grafana/dashboards $A/snmp-exporter
+   ```
+2. Stop only prometheus and grafana:
+   ```
+   docker stop prometheus grafana
+   ```
+3. Copy the data while stopped, preserving ownership and modes:
+   ```
+   cp -a /var/lib/docker/volumes/monitoring_stack_prometheus_data/_data/. $A/prometheus/data/
+   cp -a /var/lib/docker/volumes/monitoring_stack_grafana_data/_data/. $A/grafana/data/
+   ```
+4. Copy the configs from `$PD`:
+   ```
+   cp $PD/prometheus.yml $A/prometheus/etc/prometheus.yml
+   cp $PD/grafana_datasources.yml $A/grafana/provisioning/datasources/datasources.yml
+   cp $PD/grafana_dashboards.yml $A/grafana/provisioning/dashboards/dashboards.yml
+   cp -r $PD/dashboards/. $A/grafana/dashboards/
+   cp $PD/snmp.yml $A/snmp-exporter/snmp.yml
+   ```
+5. Keep a backup of the old compose file, install the new one (copy the merged
+   `docker-compose.yml` from this folder over `$PD/docker-compose.yml`), then bring up
+   ONLY the monitoring project (never `borg-stack`):
+   ```
+   cp $PD/docker-compose.yml $PD/docker-compose.yml.bak-pre-appdata
+   # copy the new docker-compose.yml into $PD, then:
+   docker compose -f $PD/docker-compose.yml -p monitoring_stack up -d
+   ```
+   This recreates prometheus, grafana and snmp-exporter (their mounts changed).
+6. Verify: all Prometheus targets are up (`http://<borg-ip>:9090/targets`), the Grafana
+   dashboards are present, and data history is intact (query a timestamp from before the
+   migration).
+7. Rollback: restore the backup and recreate:
+   ```
+   cp $PD/docker-compose.yml.bak-pre-appdata $PD/docker-compose.yml
+   docker compose -f $PD/docker-compose.yml -p monitoring_stack up -d
+   ```
+   The old named volumes and the old files on `/boot` are left untouched until Kolin
+   deletes them.
