@@ -87,3 +87,15 @@ deploy user, let alone inside the container). Everything else about Grafana's
 hardening (`no-new-privileges`, `cap_drop: ALL` otherwise) stays as-is; `grafana_data`
 (the named volume) doesn't need root -- it's a normal Docker-managed volume the stock
 `grafana` user already owns. Same revisit conditions as prometheus's entry above.
+
+## Tor Relay dashboard
+
+The `tor-relay` Prometheus job scrapes the Tor relay's MetricsPort on the operator host
+(`172.16.9.10:9035`, Borg to operator only). The "Tor Relay" dashboard (folder "Tor") shows
+relay flags, traffic against the 3000 KBytes/s rate limit, connections and circuits, and
+saturation (onion-skin drops, rate-limit, TCP exhaustion, OOM, DoS counters).
+
+It is file-provisioned from `dashboards/tor-relay.json` via `grafana_dashboards.yml`
+(`allowUiUpdates: false`), so edit the JSON in the repo, not the Grafana UI; UI edits cannot
+be saved. Tor does not expose uptime, version or CPU via MetricsPort; use Beszel for the
+operator container's CPU and uptime.

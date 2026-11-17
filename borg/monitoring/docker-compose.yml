@@ -212,6 +212,8 @@ services:
 
     volumes:
       - ./grafana_datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./grafana_dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./dashboards:/etc/grafana/dashboards:ro
       - grafana_data:/var/lib/grafana
 
     ports:
