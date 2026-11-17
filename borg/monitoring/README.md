@@ -99,3 +99,19 @@ It is file-provisioned from `dashboards/tor-relay.json` via `grafana_dashboards.
 (`allowUiUpdates: false`), so edit the JSON in the repo, not the Grafana UI; UI edits cannot
 be saved. Tor does not expose uptime, version or CPU via MetricsPort; use Beszel for the
 operator container's CPU and uptime.
+
+### Tor Relay dashboard rollback
+
+To remove the dashboard and the scrape job:
+
+1. Remove the two grafana mounts (provider file and dashboards dir) from `docker-compose.yml`.
+2. Remove `grafana_dashboards.yml` and the `dashboards/` directory.
+3. Recreate grafana. If the dashboard lingers, delete it in the Grafana UI (the provider sets `disableDeletion`, so Grafana may keep it in its database).
+4. Remove the `tor-relay` job from `prometheus.yml` and restart prometheus.
+
+### Deploying changes to Borg
+
+The live monitoring project on Borg under `/boot/config/plugins/compose.manager/projects/monitoring`
+holds COPIES of this folder, not a git checkout. After merging a change here, copy the files
+over by hand. Compose, prometheus and provider changes need the container recreated or
+restarted; a dashboard JSON change alone is picked up by Grafana's provisioning poll.

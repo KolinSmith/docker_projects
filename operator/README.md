@@ -68,7 +68,8 @@ Tor exposes a Prometheus endpoint via `MetricsPort` (see `torrc`).
 
 - **Port**: 9035 (`http://172.16.9.10:9035/metrics`)
 - **Policy**: `MetricsPortPolicy accept 192.168.9.7` (only Borg's Prometheus may scrape)
-- **pfSense**: a rule allowing TCP 9035 from Borg (192.168.9.7) to operator is required. It is added separately and is the outer wall; the Tor policy is the inner one.
+- **torrc**: the live `~/docker/torrc` on the host (mounted as `./torrc`) is authoritative. The repo `operator/torrc` is a placeholder template (the real nickname and contact only exist on the host), so do not copy the repo file over it.
+- **pfSense**: a rule allowing TCP 9035 from Borg (192.168.9.7) to operator is required. It is created by the `playbooks/pfsense_tor_metrics_rule/` playbook in the ansible_projects repo and is the outer wall; the Tor policy is the inner one.
 
 ## Managing Services
 

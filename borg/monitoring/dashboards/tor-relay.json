@@ -28,39 +28,51 @@
       "panels": []
     },
     {
-      "id": 2,
+      "id": 24,
       "type": "stat",
-      "title": "Flag: Guard",
-      "description": "Consensus flag Guard. Green = held, red = lost; a lost flag means the authorities no longer grant it.",
+      "title": "Relay scrape up",
+      "description": "up{job=\"tor-relay\"}: whether Prometheus can scrape the relay's MetricsPort. Red DOWN or NO DATA means the scrape or the relay is dead and the other panels are stale.",
       "datasource": "Prometheus",
       "gridPos": {
         "x": 0,
         "y": 1,
-        "w": 4,
+        "w": 3,
         "h": 4
       },
       "targets": [
         {
           "datasource": "Prometheus",
-          "expr": "tor_relay_flag{type=\"Guard\"}",
-          "legendFormat": "Guard",
+          "expr": "up{job=\"tor-relay\"}",
+          "instant": true,
+          "legendFormat": "scrape",
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "none",
+          "noValue": "NO DATA",
           "mappings": [
             {
               "type": "value",
               "options": {
                 "0": {
-                  "text": "LOST",
+                  "text": "DOWN",
                   "color": "red"
                 },
                 "1": {
-                  "text": "OK",
+                  "text": "UP",
                   "color": "green"
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "null+nan",
+                "result": {
+                  "text": "NO DATA",
+                  "color": "red"
                 }
               }
             }
@@ -88,7 +100,86 @@
         "colorMode": "background",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "last"
+          ]
+        },
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Flag: Guard",
+      "description": "Consensus flag Guard. Green = held, red = lost; a lost flag means the authorities no longer grant it. Shows red NO DATA if the metric is missing (scrape down); it never keeps an old OK.",
+      "datasource": "Prometheus",
+      "gridPos": {
+        "x": 3,
+        "y": 1,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "tor_relay_flag{type=\"Guard\"}",
+          "legendFormat": "Guard",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "LOST",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "OK",
+                  "color": "green"
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "null+nan",
+                "result": {
+                  "text": "NO DATA",
+                  "color": "red"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "noValue": "NO DATA"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "reduceOptions": {
+          "calcs": [
+            "last"
           ]
         },
         "textMode": "value"
@@ -98,12 +189,12 @@
       "id": 3,
       "type": "stat",
       "title": "Flag: HSDir",
-      "description": "Consensus flag HSDir. Green = held, red = lost; a lost flag means the authorities no longer grant it.",
+      "description": "Consensus flag HSDir. Green = held, red = lost; a lost flag means the authorities no longer grant it. Shows red NO DATA if the metric is missing (scrape down); it never keeps an old OK.",
       "datasource": "Prometheus",
       "gridPos": {
-        "x": 4,
+        "x": 6,
         "y": 1,
-        "w": 4,
+        "w": 3,
         "h": 4
       },
       "targets": [
@@ -111,7 +202,8 @@
           "datasource": "Prometheus",
           "expr": "tor_relay_flag{type=\"HSDir\"}",
           "legendFormat": "HSDir",
-          "refId": "A"
+          "refId": "A",
+          "instant": true
         }
       ],
       "fieldConfig": {
@@ -128,6 +220,16 @@
                 "1": {
                   "text": "OK",
                   "color": "green"
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "null+nan",
+                "result": {
+                  "text": "NO DATA",
+                  "color": "red"
                 }
               }
             }
@@ -147,7 +249,8 @@
           },
           "color": {
             "mode": "thresholds"
-          }
+          },
+          "noValue": "NO DATA"
         },
         "overrides": []
       },
@@ -155,7 +258,7 @@
         "colorMode": "background",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ]
         },
         "textMode": "value"
@@ -165,12 +268,12 @@
       "id": 4,
       "type": "stat",
       "title": "Flag: Stable",
-      "description": "Consensus flag Stable. Green = held, red = lost; a lost flag means the authorities no longer grant it.",
+      "description": "Consensus flag Stable. Green = held, red = lost; a lost flag means the authorities no longer grant it. Shows red NO DATA if the metric is missing (scrape down); it never keeps an old OK.",
       "datasource": "Prometheus",
       "gridPos": {
-        "x": 8,
+        "x": 9,
         "y": 1,
-        "w": 4,
+        "w": 3,
         "h": 4
       },
       "targets": [
@@ -178,7 +281,8 @@
           "datasource": "Prometheus",
           "expr": "tor_relay_flag{type=\"Stable\"}",
           "legendFormat": "Stable",
-          "refId": "A"
+          "refId": "A",
+          "instant": true
         }
       ],
       "fieldConfig": {
@@ -195,6 +299,16 @@
                 "1": {
                   "text": "OK",
                   "color": "green"
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "null+nan",
+                "result": {
+                  "text": "NO DATA",
+                  "color": "red"
                 }
               }
             }
@@ -214,7 +328,8 @@
           },
           "color": {
             "mode": "thresholds"
-          }
+          },
+          "noValue": "NO DATA"
         },
         "overrides": []
       },
@@ -222,7 +337,7 @@
         "colorMode": "background",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ]
         },
         "textMode": "value"
@@ -232,12 +347,12 @@
       "id": 5,
       "type": "stat",
       "title": "Flag: Fast",
-      "description": "Consensus flag Fast. Green = held, red = lost; a lost flag means the authorities no longer grant it.",
+      "description": "Consensus flag Fast. Green = held, red = lost; a lost flag means the authorities no longer grant it. Shows red NO DATA if the metric is missing (scrape down); it never keeps an old OK.",
       "datasource": "Prometheus",
       "gridPos": {
         "x": 12,
         "y": 1,
-        "w": 4,
+        "w": 3,
         "h": 4
       },
       "targets": [
@@ -245,7 +360,8 @@
           "datasource": "Prometheus",
           "expr": "tor_relay_flag{type=\"Fast\"}",
           "legendFormat": "Fast",
-          "refId": "A"
+          "refId": "A",
+          "instant": true
         }
       ],
       "fieldConfig": {
@@ -262,6 +378,16 @@
                 "1": {
                   "text": "OK",
                   "color": "green"
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "null+nan",
+                "result": {
+                  "text": "NO DATA",
+                  "color": "red"
                 }
               }
             }
@@ -281,7 +407,8 @@
           },
           "color": {
             "mode": "thresholds"
-          }
+          },
+          "noValue": "NO DATA"
         },
         "overrides": []
       },
@@ -289,7 +416,7 @@
         "colorMode": "background",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ]
         },
         "textMode": "value"
@@ -299,12 +426,12 @@
       "id": 6,
       "type": "stat",
       "title": "Flag: Running",
-      "description": "Consensus flag Running. Green = held, red = lost; a lost flag means the authorities no longer grant it.",
+      "description": "Consensus flag Running. Green = held, red = lost; a lost flag means the authorities no longer grant it. Shows red NO DATA if the metric is missing (scrape down); it never keeps an old OK.",
       "datasource": "Prometheus",
       "gridPos": {
-        "x": 16,
+        "x": 15,
         "y": 1,
-        "w": 4,
+        "w": 3,
         "h": 4
       },
       "targets": [
@@ -312,7 +439,8 @@
           "datasource": "Prometheus",
           "expr": "tor_relay_flag{type=\"Running\"}",
           "legendFormat": "Running",
-          "refId": "A"
+          "refId": "A",
+          "instant": true
         }
       ],
       "fieldConfig": {
@@ -329,6 +457,16 @@
                 "1": {
                   "text": "OK",
                   "color": "green"
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "null+nan",
+                "result": {
+                  "text": "NO DATA",
+                  "color": "red"
                 }
               }
             }
@@ -348,7 +486,8 @@
           },
           "color": {
             "mode": "thresholds"
-          }
+          },
+          "noValue": "NO DATA"
         },
         "overrides": []
       },
@@ -356,7 +495,7 @@
         "colorMode": "background",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ]
         },
         "textMode": "value"
@@ -366,12 +505,12 @@
       "id": 7,
       "type": "stat",
       "title": "Flag: V2Dir",
-      "description": "Consensus flag V2Dir. Green = held, red = lost; a lost flag means the authorities no longer grant it.",
+      "description": "Consensus flag V2Dir. Green = held, red = lost; a lost flag means the authorities no longer grant it. Shows red NO DATA if the metric is missing (scrape down); it never keeps an old OK.",
       "datasource": "Prometheus",
       "gridPos": {
-        "x": 20,
+        "x": 18,
         "y": 1,
-        "w": 4,
+        "w": 3,
         "h": 4
       },
       "targets": [
@@ -379,7 +518,8 @@
           "datasource": "Prometheus",
           "expr": "tor_relay_flag{type=\"V2Dir\"}",
           "legendFormat": "V2Dir",
-          "refId": "A"
+          "refId": "A",
+          "instant": true
         }
       ],
       "fieldConfig": {
@@ -398,6 +538,16 @@
                   "color": "green"
                 }
               }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "null+nan",
+                "result": {
+                  "text": "NO DATA",
+                  "color": "red"
+                }
+              }
             }
           ],
           "thresholds": {
@@ -409,6 +559,74 @@
               },
               {
                 "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "noValue": "NO DATA"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ]
+        },
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 25,
+      "type": "stat",
+      "title": "Flag: Sybil",
+      "description": "Sybil flag set by the directory authorities. 0 is normal (green OK); 1 (red SYBIL) means the relay was flagged as part of a Sybil attack. Shows red NO DATA if the metric is missing (scrape down).",
+      "datasource": "Prometheus",
+      "gridPos": {
+        "x": 21,
+        "y": 1,
+        "w": 3,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "tor_relay_flag{type=\"Sybil\"}",
+          "legendFormat": "Sybil",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "OK",
+                  "color": "green"
+                },
+                "1": {
+                  "text": "SYBIL",
+                  "color": "red"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
                 "value": 1
               }
             ]
@@ -505,7 +723,7 @@
       "id": 11,
       "type": "timeseries",
       "title": "Open connections by type",
-      "description": "Currently opened connections summed by type (OR, Exit, Directory, ...).",
+      "description": "Currently opened connections summed by type (OR, Exit, Directory, ...). Listener sockets, the scrape's own Metrics connection and always-zero series are excluded.",
       "datasource": "Prometheus",
       "gridPos": {
         "x": 0,
@@ -516,7 +734,7 @@
       "targets": [
         {
           "datasource": "Prometheus",
-          "expr": "sum by (type) (tor_relay_connections{state=\"opened\"})",
+          "expr": "sum by (type) (tor_relay_connections{state=\"opened\",type!~\".*listener|Metrics\"}) > 0",
           "legendFormat": "{{type}}",
           "refId": "A"
         }
@@ -649,8 +867,27 @@
       "fieldConfig": {
         "defaults": {
           "unit": "percentunit",
-          "min": 0,
-          "max": 1
+          "min": 0.9,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.95
+              },
+              {
+                "color": "green",
+                "value": 0.99
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -769,34 +1006,56 @@
       "options": {}
     },
     {
-      "id": 23,
+      "id": 26,
       "type": "timeseries",
-      "title": "Sockets",
-      "description": "tor_relay_load_socket_total is a gauge. 'opened' (state=\"opened\") is the current number of open sockets; 'limit' is the unlabeled series, the relay's total socket capacity. Opened approaching limit means socket exhaustion.",
+      "title": "Rejected connections per second",
+      "description": "Rate of connections Tor rejected, by type (tor_relay_connections_total with state=rejected). Sustained non-zero values mean the relay is refusing connections (limits or DoS defenses).",
       "datasource": "Prometheus",
       "gridPos": {
         "x": 0,
         "y": 40,
-        "w": 24,
+        "w": 12,
         "h": 8
       },
       "targets": [
         {
           "datasource": "Prometheus",
-          "expr": "tor_relay_load_socket_total{state=\"opened\"}",
-          "legendFormat": "opened",
+          "expr": "sum by (type) (rate(tor_relay_connections_total{state=\"rejected\"}[5m]))",
+          "legendFormat": "{{type}}",
           "refId": "A"
-        },
-        {
-          "datasource": "Prometheus",
-          "expr": "tor_relay_load_socket_total{state=\"\"}",
-          "legendFormat": "limit",
-          "refId": "B"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {}
+    },
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "Sockets used (% of limit)",
+      "description": "Open sockets divided by the socket limit Tor reports (tor_relay_load_socket_total, currently 524256). It is the ratio of opened sockets to that ceiling; approaching 100% means socket exhaustion.",
+      "datasource": "Prometheus",
+      "gridPos": {
+        "x": 12,
+        "y": 40,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "tor_relay_load_socket_total{state=\"opened\"} / on() tor_relay_load_socket_total{state=\"\"}",
+          "legendFormat": "used",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
         },
         "overrides": []
       },
