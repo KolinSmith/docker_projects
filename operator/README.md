@@ -62,6 +62,14 @@ Visit [Tor Metrics Relay Search](https://metrics.torproject.org/rs.html#search) 
 
 **Note**: New relays appear within 24-48 hours. Guard promotion takes ~8 days of stable operation.
 
+## Metrics
+
+Tor exposes a Prometheus endpoint via `MetricsPort` (see `torrc`).
+
+- **Port**: 9035 (`http://172.16.9.10:9035/metrics`)
+- **Policy**: `MetricsPortPolicy accept 192.168.9.7` (only Borg's Prometheus may scrape)
+- **pfSense**: a rule allowing TCP 9035 from Borg (192.168.9.7) to operator is required. It is added separately and is the outer wall; the Tor policy is the inner one.
+
 ## Managing Services
 
 ```bash

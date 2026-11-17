@@ -70,6 +70,7 @@ services:
     ports:
       - "${TOR_OR_PORT:-8443}:8443"   # ORPort
       - "${TOR_DIR_PORT:-8444}:8444"  # DirPort
+      - "9035:9035"                   # MetricsPort (Borg Prometheus only)
     volumes:
       - ./torrc:/etc/tor/torrc:ro
       - ./nyxrc:/.nyx/config:ro
