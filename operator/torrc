@@ -49,4 +49,11 @@ ExitPolicy reject *:*
 # Uncomment if running multiple relays (add fingerprints)
 #MyFamily $fingerprint1,$fingerprint2
 
+# Prometheus metrics endpoint.
+# Only Borg's Prometheus (192.168.9.7) may scrape this; MetricsPortPolicy drops
+# every other source at the Tor level. pfSense is the outer wall: a firewall rule
+# allowing only Borg to operator:9035 is required (managed separately).
+MetricsPort 0.0.0.0:9035 prometheus
+MetricsPortPolicy accept 192.168.9.7
+
 ############### End Configuration ###############
